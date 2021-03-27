@@ -1,0 +1,1 @@
+create_protobuf_target(BasicMessage.proto)

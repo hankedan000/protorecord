@@ -1,0 +1,8 @@
+syntax = "proto2";
+
+package protorecord;
+
+message BasicMessage {
+	required string myString = 1;
+	required uint32 myInt = 2;
+}

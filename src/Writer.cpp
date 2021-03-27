@@ -1,5 +1,5 @@
-#include "Utils.h"
-#include "Writer.h"
+#include "protorecord/Utils.h"
+#include "protorecord/Writer.h"
 #include <iostream>
 // TODO support non-unix systems
 #include <sys/stat.h>
