@@ -30,3 +30,5 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 	include(CTest)
 	set(BUILD_TESTING "ON")
 endif()
+
+add_subdirectory(src)

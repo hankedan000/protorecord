@@ -1,0 +1,30 @@
+syntax = "proto2";
+
+import "ProtorecordTypes.proto";
+
+package protorecord;
+
+// library version message
+message IndexItem {
+	// item's byte offset relative to beginning of record
+	required uint64 offset = 1;
+
+	// item's size in bytes
+	required uint32 size = 2;
+
+	// timestamp in microseconds relative to the beginning of the recording when
+	// the item was saved
+	optional uint64 timestamp = 3;
+}
+
+message IndexSummary {
+	// total number of items in record index
+	required uint64 total_items = 1;
+
+	// the size of the IndexItem type in bytes
+	// this size can change based on if timestamps are saved or not
+	required uint32 index_item_size = 2;
+
+	// record start time in UNIX epoch time (microseconds)
+	required uint64 start_time_utc = 3;
+}
