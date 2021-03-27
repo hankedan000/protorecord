@@ -31,4 +31,8 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 	set(BUILD_TESTING "ON")
 endif()
 
+# protorecord public includes directory
+set(PROTORECORD_PUBLIC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
+include_directories(${PROTORECORD_PUBLIC_INCLUDE_DIR})
+
 add_subdirectory(src)

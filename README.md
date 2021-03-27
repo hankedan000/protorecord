@@ -31,6 +31,8 @@ int main()
 		msg.set_myint(i);
 		writer.write(msg);
 	}
+
+	return 0;
 }
 ```
 
@@ -51,5 +53,7 @@ int main()
 
 		std::cout << msg.DebugString() << std::endl;
 	}
+
+	return 0;
 }
 ```
