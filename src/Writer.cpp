@@ -26,8 +26,8 @@ namespace protorecord
 	 , index_file_()
 	 , data_file_()
 	{
-		initialized_ = init_record(filepath);
 		buffer_.resize(64000);
+		initialized_ = init_record(filepath);
 	}
 
 	/**
