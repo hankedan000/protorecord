@@ -18,7 +18,6 @@ namespace protorecord
 	 , next_item_num_(0)
 	 , failbit_(false)
 	{
-
 		buffer_.resize(64000);
 		initialized_ = init_record(filepath);
 	}

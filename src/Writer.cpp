@@ -54,8 +54,11 @@ namespace protorecord
 		bool okay = true;
 
 		int status = mkdir(filepath.c_str(),0777);
-		if (okay && status < 0)
+		if (status < 0)
 		{
+			std::cerr << __func__ << " - failed to create record. " <<
+				"error: " << strerror(errno) << "; "
+				"filepath: '" << filepath << "'" << std::endl;
 			okay = false;
 		}
 
