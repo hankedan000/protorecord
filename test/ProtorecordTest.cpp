@@ -10,6 +10,11 @@ namespace protorecord
 
 	ProtorecordTest::ProtorecordTest()
 	{
+	}
+
+	void
+	ProtorecordTest::setUp()
+	{
 		// make a clean temporary directory for saving recordings
 		std::string cmd = "rm -r ";
 		cmd += TEST_TMP_PATH;
@@ -20,11 +25,6 @@ namespace protorecord
 			std::cerr << strerror(errno) << std::endl;
 			exit(EXIT_FAILURE);
 		}
-	}
-
-	void
-	ProtorecordTest::setUp()
-	{
 	}
 
 	void
