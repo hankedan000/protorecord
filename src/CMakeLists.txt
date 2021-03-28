@@ -16,6 +16,7 @@ list(APPEND protorecord_PUBLIC_HEADERS
 	"${PROTORECORD_INCLUDE_DIR}/protorecord/Reader.h"
 	"${PROTORECORD_INCLUDE_DIR}/protorecord/Sizes.h"
 	"${PROTORECORD_INCLUDE_DIR}/protorecord/Utils.h"
+	"${CMAKE_BINARY_DIR}/include/protorecord/version.h"
 )
 set_target_properties(protorecord PROPERTIES
 	PUBLIC_HEADER "${protorecord_PUBLIC_HEADERS}"
@@ -23,6 +24,8 @@ set_target_properties(protorecord PROPERTIES
 install(
 	TARGETS protorecord
 	EXPORT protorecord-targets
+	ARCHIVE
+		DESTINATION lib
 	LIBRARY
 		DESTINATION lib
 	PUBLIC_HEADER

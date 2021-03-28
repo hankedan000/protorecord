@@ -2,11 +2,11 @@ cmake_minimum_required (VERSION 3.1)
 
 project(protorecord)
 
-set(PROTORECORD_MAJOR_VERSION 0)
-set(PROTORECORD_MINOR_VERSION 1)
-set(PROTORECORD_PATCH_VERSION 0)
+set(PROTORECORD_VERSION_MAJOR 0)
+set(PROTORECORD_VERSION_MINOR 1)
+set(PROTORECORD_VERSION_PATCH 0)
 set(PROTORECORD_VERSION
-	${PROTORECORD_MAJOR_VERSION},${PROTORECORD_MINOR_VERSION},${PROTORECORD_PATCH_VERSION})
+	${PROTORECORD_VERSION_MAJOR},${PROTORECORD_VERSION_MINOR},${PROTORECORD_VERSION_PATCH})
 
 # compiler options
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -34,7 +34,9 @@ endif()
 # protorecord public includes directory
 set(PROTORECORD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/include")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/include")
 
+add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(demo)
 
