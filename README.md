@@ -11,10 +11,9 @@ make
 make install
 ```
 
-# Examples
-Some example use cases.
+# Writer
+A class that stores protobuf messages to a record.
 
-## protorecord::Writer
 ``` cpp
 #include "protorecord.h"
 #include "BasicMessage.pb.h"
@@ -23,12 +22,12 @@ int main()
 {
 	protorecord::Writer writer("recording");
 
-	BasicMessage msg;
-	msg.set_mystring("helloworld");
-
 	for (unsigned int i=0; i<10; i++)
 	{
+		BasicMessage msg;
+		msg.set_mystring("helloworld");
 		msg.set_myint(i);
+
 		writer.write(msg);
 	}
 
@@ -36,7 +35,9 @@ int main()
 }
 ```
 
-## protorecord::Reader
+# Reader
+A class that reads protobuf messages from a record.
+
 ``` cpp
 #include <iostream>
 #include "protorecord.h"
@@ -49,9 +50,10 @@ int main()
 	while (reader.has_next())
 	{
 		BasicMessage msg;
-		reader.get_next(msg);
-
-		std::cout << msg.DebugString() << std::endl;
+		if (reader.take_next(msg))
+		{
+			std::cout << msg.DebugString() << std::endl;
+		}
 	}
 
 	return 0;
