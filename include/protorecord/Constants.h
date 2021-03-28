@@ -23,9 +23,10 @@ namespace protorecord
 		// during the recording.
 		const uint32_t RECORD_WRITE_ERROR = 0x2;
 
-		// set if the record experienced an error at some point
-		// during the recording.
-		const uint32_t RECORD_READ_ERROR = 0x4;
+		// set if the record contains binary message data that was assumed
+		// to be serialized externally to library. This flag is set the first
+		// time Writer::write_assumed() method is called.
+		const uint32_t HAS_ASSUMED_DATA = 0x4;
 
 		// indicating the record contains timestamped items
 		const uint32_t HAS_TIMESTAMPS = 0x8;

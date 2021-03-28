@@ -45,6 +45,21 @@ namespace protorecord
 	// public methods
 	//-------------------------------------------------------------------------
 
+	bool
+	Writer::write_assumed(
+		const void *msg_data,
+		uint32_t msg_data_size)
+	{
+		bool okay = write_item_data(msg_data,msg_data_size);
+
+		if (okay)
+		{
+			flags_ |= protorecord::Flags::HAS_ASSUMED_DATA;
+		}
+
+		return okay;
+	}
+
 	void
 	Writer::close(
 		bool store_readme)
@@ -188,6 +203,41 @@ namespace protorecord
 				// restore position back
 				index_file_.seekp(prev_pos);
 			}
+		}
+
+		return okay;
+	}
+
+	bool
+	Writer::write_item_data(
+		const void *item_data,
+		uint32_t item_data_size)
+	{
+		bool okay = initialized_;
+
+		if (okay)
+		{
+			/**
+			 * When timestamping is enabled, it should be set by the caller.
+			 * This is done to achieve a more accurate timestamping closer to
+			 * where the user made the public write_*() call; otherwise, the
+			 * stored timestamp could encapsulate serialization time overhead.
+			 */
+			index_item_.set_offset(data_file_.tellp());
+			index_item_.set_size(item_data_size);
+			if (index_item_.size() < buffer_.size())
+			{// grow buffer
+				buffer_.resize(index_item_.size() * 2);
+			}
+
+			data_file_.write(buffer_.data(),item_data_size);
+
+			// update index file
+			index_item_.SerializeToArray((void*)buffer_.data(),buffer_.size());
+			index_file_.write(buffer_.data(),index_summary_.index_item_size());
+
+			// increment item count
+			total_item_count_++;
 		}
 
 		return okay;

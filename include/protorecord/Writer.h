@@ -58,6 +58,30 @@ namespace protorecord
 			const PROTOBUF_T &pb);
 
 		/**
+		 * Method that writes an externally serialized protobuf message
+		 * to the record. This method assumes that the caller has
+		 * properly serialized the protobuf message to the buffer. This
+		 * method is provided for performance purposes because it skips
+		 * the process of serialization and just write the binary data
+		 * to the record.
+		 *
+		 * @param[in] msg_data
+		 * Pointer to the serialized data buffer to write to disk
+		 *
+		 * @param[in] msg_data_size
+		 * The size of the msg_data block in bytes
+		 *
+		 * @return
+		 * True if the item was written successfully, false otherwise.
+		 * If the record was successfully written, the HAS_ASSUMED_DATA
+		 * flag will be set.
+		 */
+		bool
+		write_assumed(
+			const void *msg_data,
+			uint32_t msg_data_size);
+
+		/**
 		 * Stores the finalized index to disk and closes all opened
 		 * file descriptors. This method is automatically called by
 		 * class's destructor.
@@ -102,6 +126,24 @@ namespace protorecord
 		store_summary(
 			std::streampos pos,
 			bool restore_pos);
+
+		/**
+		 * Methods used to append the serialized item's data to the record
+		 *
+		 * @param[in] item_data
+		 * Pointer to the serialized data buffer to write to disk
+		 *
+		 * @param[in] item_data_size
+		 * The size of the item_data block in bytes
+		 *
+		 * @return
+		 * True if the item was written successfully, if so the class's
+		 * total_item_count_ is incremented.
+		 */
+		bool
+		write_item_data(
+			const void *item_data,
+			uint32_t item_data_size);
 
 	private:
 		// set to true if the writer was initialized succesfully
@@ -155,17 +197,10 @@ namespace protorecord
 				index_item_.set_timestamp((get_time_now() - start_time_).count());
 			}
 
-			index_item_.set_offset(data_file_.tellp());
-			index_item_.set_size(pb.ByteSizeLong());
-			if (index_item_.size() < buffer_.size())
-			{// grow buffer
-				buffer_.resize(index_item_.size() * 2);
-			}
-
 			try
 			{
-				pb.SerializeToArray((void*)buffer_.data(),buffer_.size());
-				data_file_.write(buffer_.data(),index_item_.size());
+				okay = okay && pb.SerializeToArray((void*)buffer_.data(),buffer_.size());
+				okay = okay && write_item_data(buffer_.data(),pb.ByteSizeLong());
 			}
 			catch (const std::exception &ex)
 			{
@@ -177,17 +212,6 @@ namespace protorecord
 			{
 				std::cerr << __func__ << " - caught unknown exception " << std::endl;
 				okay = false;
-			}
-
-			// if serialization was successful, update index file
-			if (okay)
-			{
-				// store the IndexItem to index file
-				index_item_.SerializeToArray((void*)buffer_.data(),buffer_.size());
-				index_file_.write(buffer_.data(),index_summary_.index_item_size());
-
-				// increment item count
-				total_item_count_++;
 			}
 		}
 
