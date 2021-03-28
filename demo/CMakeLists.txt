@@ -6,3 +6,10 @@ target_link_libraries(WriterDemo
 		protorecord
 		BasicMessage_pb
 )
+
+add_executable(ReaderDemo ReaderDemo.cpp)
+target_link_libraries(ReaderDemo
+	PUBLIC
+		protorecord
+		BasicMessage_pb
+)
