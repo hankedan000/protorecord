@@ -43,7 +43,7 @@ add_subdirectory(demo)
 
 # install main header file
 install(FILES "${PROTORECORD_INCLUDE_DIR}/protorecord.h"
-	TYPE INCLUDE)
+	DESTINATION "include")
 
 # install the exported targets file
 install(
