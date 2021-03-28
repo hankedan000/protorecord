@@ -13,6 +13,7 @@ namespace protorecord
 		CPPUNIT_TEST(simple_write_read);
 		CPPUNIT_TEST(long_write_read);
 		CPPUNIT_TEST(version);
+		CPPUNIT_TEST(timestamping);
 		CPPUNIT_TEST_SUITE_END();
 
 	public:
@@ -24,6 +25,7 @@ namespace protorecord
 		void simple_write_read();
 		void long_write_read();
 		void version();
+		void timestamping();
 
 	private:
 		const std::string TEST_TMP_PATH = "test_tmp";

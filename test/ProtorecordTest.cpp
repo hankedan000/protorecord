@@ -61,7 +61,7 @@ namespace protorecord
 			CPPUNIT_ASSERT_MESSAGE(
 				"reader ran away!",
 				expect < NUM_ITEMS);
-			CPPUNIT_ASSERT(reader.get_next(msg));
+			CPPUNIT_ASSERT(reader.take_next(msg));
 			CPPUNIT_ASSERT_EQUAL(expect,msg.myint());
 			CPPUNIT_ASSERT_EQUAL(std::string("helloworld"),msg.mystring());
 			expect++;
@@ -97,7 +97,7 @@ namespace protorecord
 			CPPUNIT_ASSERT_MESSAGE(
 				"reader ran away!",
 				expect < NUM_ITEMS);
-			CPPUNIT_ASSERT(reader.get_next(msg));
+			CPPUNIT_ASSERT(reader.take_next(msg));
 			CPPUNIT_ASSERT_EQUAL(expect,msg.myint());
 			CPPUNIT_ASSERT_EQUAL(std::string("helloworld"),msg.mystring());
 			expect++;
@@ -122,13 +122,76 @@ namespace protorecord
 		CPPUNIT_ASSERT_EQUAL((int)PROTORECORD_VERSION_PATCH,(int)actual.patch());
 
 		// make sure version is 0.0.0 when record doesn't exist
-		Reader reader_no_version("this_record_does_not_exist");
+		Reader reader_no_version("this_record_is_expected_to_not_exist");
 		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,reader_no_version.size());
 
 		actual = reader_no_version.get_version();
 		CPPUNIT_ASSERT_EQUAL((int)0,(int)actual.major());
 		CPPUNIT_ASSERT_EQUAL((int)0,(int)actual.minor());
 		CPPUNIT_ASSERT_EQUAL((int)0,(int)actual.patch());
+	}
+
+	void
+	ProtorecordTest::timestamping()
+	{
+		const std::string RECORD_PATH(TEST_TMP_PATH + "/" + __func__);
+		const size_t NUM_ITEMS = 100;
+		const unsigned int SLEEP_INTERVAL = 10000;
+
+		Writer writer(RECORD_PATH,true);// enable timestamping
+
+		BasicMessage msg;
+		msg.set_mystring("helloworld");
+
+		for (unsigned int i=0; i<NUM_ITEMS; i++)
+		{
+			msg.set_myint(i);
+			CPPUNIT_ASSERT(writer.write(msg));
+			usleep(SLEEP_INTERVAL);// wait ~100ms between writes
+		}
+
+		writer.close();
+
+		Reader reader(RECORD_PATH);
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,reader.size());
+		CPPUNIT_ASSERT_EQUAL(true,reader.has_timestamps());
+
+		uint64_t start_time_us;
+		CPPUNIT_ASSERT(reader.get_start_time(start_time_us));
+		CPPUNIT_ASSERT(start_time_us > 0);
+
+		uint32_t expect_item_num = 0;
+		uint64_t prev_timestamp = 0;
+		bool first_item = true;
+		while (reader.has_next())
+		{
+			CPPUNIT_ASSERT_MESSAGE(
+				"reader ran away!",
+				expect_item_num < NUM_ITEMS);
+
+			// check item timestamp
+			uint64_t actual_timestamp;
+			CPPUNIT_ASSERT(reader.get_next_timestamp(actual_timestamp));
+			if (first_item)
+			{
+				// make sure expected value is close to zero
+				CPPUNIT_ASSERT_DOUBLES_EQUAL(0ULL,actual_timestamp,1000.0);
+			}
+			else
+			{
+				double diff = actual_timestamp - prev_timestamp;
+				// make sure expected value is within 1ms
+				CPPUNIT_ASSERT_DOUBLES_EQUAL(SLEEP_INTERVAL,diff,1000.0);
+			}
+			prev_timestamp = actual_timestamp;
+
+			CPPUNIT_ASSERT(reader.take_next(msg));
+			CPPUNIT_ASSERT_EQUAL(expect_item_num,msg.myint());
+			CPPUNIT_ASSERT_EQUAL(std::string("helloworld"),msg.mystring());
+
+			expect_item_num++;
+			first_item = false;
+		}
 	}
 
 }// protorecord

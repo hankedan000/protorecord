@@ -39,6 +39,18 @@ namespace protorecord
 			next_item_num_ < index_summary_.total_items();
 	}
 
+	bool
+	Reader::get_next_timestamp(
+		uint64_t &item_timestamp)
+	{
+		bool okay = get_index_item(next_item_num_,index_item_);
+		if (okay && index_item_.has_timestamp())
+		{
+			item_timestamp = index_item_.timestamp();
+		}
+		return okay;
+	}
+
 	size_t
 	Reader::size() const
 	{
@@ -67,6 +79,14 @@ namespace protorecord
 		has_timestamps = has_timestamps && (flags & protorecord::Flags::VALID);
 		has_timestamps = has_timestamps && (flags & protorecord::Flags::HAS_TIMESTAMPS);
 		return has_timestamps;
+	}
+
+	bool
+	Reader::get_start_time(
+		uint64_t &start_time_us) const
+	{
+		start_time_us = index_summary_.start_time_utc();
+		return initialized_;
 	}
 
 	protorecord::Version
@@ -205,12 +225,20 @@ namespace protorecord
 	}
 
 	bool
-	Reader::parse_next_index_item()
+	Reader::get_index_item(
+		uint64_t item_idx,
+		protorecord::IndexItem &item_out)
 	{
-		bool okay = initialized_ && has_next();
+		bool okay = initialized_ && item_idx < this->size();
 
 		if (okay)
 		{
+			// compute position to IndexItem in file
+			std::streampos pos = PROTORECORD_VERSION_SIZE + PROTORECORD_INDEX_SUMMARY_SIZE;
+			pos += item_idx * index_summary_.index_item_size();
+
+			// seek to position and read
+			index_file_.seekg(pos);
 			index_file_.read(buffer_.data(),index_summary_.index_item_size());
 			if (index_file_.eof())
 			{

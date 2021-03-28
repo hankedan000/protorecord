@@ -11,9 +11,10 @@ int main()
 	while (reader.has_next())
 	{
 		BasicMessage msg;
-		reader.get_next(msg);
-
-		std::cout << msg.DebugString() << std::endl;
+		if (reader.take_next(msg))
+		{
+			std::cout << msg.DebugString() << std::endl;
+		}
 	}
 
 	return 0;

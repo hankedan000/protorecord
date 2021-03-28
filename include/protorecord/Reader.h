@@ -35,9 +35,10 @@ namespace protorecord
 		has_next() const;
 
 		/**
-		 * Reads a protobuf message from the record
+		 * Reads the next protobuf message from the record, but does not
+		 * increment to the next item.
 		 *
-		 * @param[in] pb
+		 * @param[out] pb
 		 * The google::protobuf message to read into
 		 *
 		 * @return
@@ -47,6 +48,35 @@ namespace protorecord
 		bool
 		get_next(
 			PROTOBUF_T &pb);
+
+		/**
+		 * Reads the next protobuf message from the record, and increments
+		 * to the next item.
+		 *
+		 * @param[out] pb
+		 * The google::protobuf message to read into
+		 *
+		 * @return
+		 * True if message was successfully read, false otherwise
+		 */
+		template<class PROTOBUF_T>
+		bool
+		take_next(
+			PROTOBUF_T &pb);
+
+		/**
+		 * Reads the next item's timestamp
+		 *
+		 * @param[out] item_timestamp
+		 * The parsed item's timestamp
+		 *
+		 * @return
+		 * True if record contains timestamps, and the item timestamp was
+		 * read successfully.
+		 */
+		bool
+		get_next_timestamp(
+			uint64_t &item_timestamp);
 
 		/**
 		 * @return
@@ -68,6 +98,18 @@ namespace protorecord
 		 */
 		bool
 		has_timestamps() const;
+
+		/**
+		 * @param[out] start_time_us
+		 * The records start time in microseconds
+		 *
+		 * @return
+		 * True on success, false otherwise. If false is returned, the value
+		 * of 'start_time_us' should not be assumed.
+		 */
+		bool
+		get_start_time(
+			uint64_t &start_time_us) const;
 
 		/**
 		 * @return
@@ -114,11 +156,19 @@ namespace protorecord
 		 * Parse the next index item from the index_file_ and places the
 		 * result in the classes index_item_ member
 		 *
+		 * @param[in] item_idx
+		 * The index item to read from the index_file
+		 *
+		 * @param[out] item_out
+		 * The parsed IndexItem
+		 *
 		 * @return
 		 * True if index_item was parsed successfully, false otherwise
 		 */
 		bool
-		parse_next_index_item();
+		get_index_item(
+			uint64_t item_idx,
+			protorecord::IndexItem &item_out);
 
 	private:
 		// set to true if the writer was initialized succesfully
@@ -158,7 +208,7 @@ namespace protorecord
 		bool okay = initialized_;
 
 		okay = okay && has_next();
-		okay = okay && parse_next_index_item();
+		okay = okay && get_index_item(next_item_num_,index_item_);
 
 		if (okay)
 		{
@@ -198,15 +248,25 @@ namespace protorecord
 			}
 		}
 
-		if (okay)
-		{
-			next_item_num_++;
-		}
-		else
+		if ( ! okay)
 		{
 			failbit_ = true;
 		}
 
 		return okay;
 	}
+
+	template<class PROTOBUF_T>
+	bool
+	Reader::take_next(
+		PROTOBUF_T &pb)
+	{
+		bool okay = get_next(pb);
+		if (okay)
+		{
+			next_item_num_++;
+		}
+		return okay;
+	}
+
 }// protorecord
