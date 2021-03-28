@@ -11,6 +11,7 @@ namespace protorecord
 	{
 		CPPUNIT_TEST_SUITE(ProtorecordTest);
 		CPPUNIT_TEST(simple_write_read);
+		CPPUNIT_TEST(long_write_read);
 		CPPUNIT_TEST_SUITE_END();
 
 	public:
@@ -20,6 +21,7 @@ namespace protorecord
 
 	protected:
 		void simple_write_read();
+		void long_write_read();
 
 	private:
 		const std::string TEST_TMP_PATH = "test_tmp";

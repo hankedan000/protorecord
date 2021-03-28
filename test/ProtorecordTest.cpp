@@ -35,14 +35,15 @@ namespace protorecord
 	void
 	ProtorecordTest::simple_write_read()
 	{
-		const std::string RECORD_PATH(TEST_TMP_PATH + "/recording");
+		const std::string RECORD_PATH(TEST_TMP_PATH + "/" + __func__);
+		const size_t NUM_ITEMS = 10;
 
 		Writer writer(RECORD_PATH);
 
 		BasicMessage msg;
 		msg.set_mystring("helloworld");
 
-		for (unsigned int i=0; i<10; i++)
+		for (unsigned int i=0; i<NUM_ITEMS; i++)
 		{
 			msg.set_myint(i);
 			CPPUNIT_ASSERT(writer.write(msg));
@@ -51,13 +52,51 @@ namespace protorecord
 		writer.close();
 
 		Reader reader(RECORD_PATH);
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,reader.size());
+		CPPUNIT_ASSERT_EQUAL(false,reader.has_timestamps());
 
 		unsigned int expect = 0;
 		while (reader.has_next())
 		{
 			CPPUNIT_ASSERT_MESSAGE(
 				"reader ran away!",
-				expect < 10);
+				expect < NUM_ITEMS);
+			CPPUNIT_ASSERT(reader.get_next(msg));
+			CPPUNIT_ASSERT_EQUAL(expect,msg.myint());
+			CPPUNIT_ASSERT_EQUAL(std::string("helloworld"),msg.mystring());
+			expect++;
+		}
+	}
+
+	void
+	ProtorecordTest::long_write_read()
+	{
+		const std::string RECORD_PATH(TEST_TMP_PATH + "/" + __func__);
+		const size_t NUM_ITEMS = 100000;
+
+		Writer writer(RECORD_PATH);
+
+		BasicMessage msg;
+		msg.set_mystring("helloworld");
+
+		for (unsigned int i=0; i<NUM_ITEMS; i++)
+		{
+			msg.set_myint(i);
+			CPPUNIT_ASSERT(writer.write(msg));
+		}
+
+		writer.close();
+
+		Reader reader(RECORD_PATH);
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,reader.size());
+		CPPUNIT_ASSERT_EQUAL(false,reader.has_timestamps());
+
+		unsigned int expect = 0;
+		while (reader.has_next())
+		{
+			CPPUNIT_ASSERT_MESSAGE(
+				"reader ran away!",
+				expect < NUM_ITEMS);
 			CPPUNIT_ASSERT(reader.get_next(msg));
 			CPPUNIT_ASSERT_EQUAL(expect,msg.myint());
 			CPPUNIT_ASSERT_EQUAL(std::string("helloworld"),msg.mystring());
