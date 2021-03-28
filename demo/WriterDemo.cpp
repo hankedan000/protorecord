@@ -5,7 +5,7 @@ using namespace protorecord;
 
 int main()
 {
-	Writer writer("recording.pr");
+	Writer writer("recording");
 
 	BasicMessage msg;
 	msg.set_mystring("helloworld");

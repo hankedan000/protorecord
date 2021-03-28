@@ -21,7 +21,7 @@ Some example use cases.
 
 int main()
 {
-	protorecord::Writer writer("recording.pr");
+	protorecord::Writer writer("recording");
 
 	BasicMessage msg;
 	msg.set_mystring("helloworld");
@@ -44,7 +44,7 @@ int main()
 
 int main()
 {
-	protorecord::Reader reader("recording.pr");
+	protorecord::Reader reader("recording");
 
 	while (reader.has_next())
 	{
