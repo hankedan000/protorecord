@@ -81,12 +81,19 @@ namespace protorecord
 		/**
 		 * Will store the current IndexSummary to disk
 		 *
+		 * @param[in] pos
+		 * The location in the index file to store the summary
+		 *
 		 * @param[in] restore_pos
 		 * If set to true, the index_file_ position will be restored
 		 * back to where it was when this method was called.
+		 *
+		 * @return
+		 * True if the summary was stored succesfully, false otherwise
 		 */
-		void
+		bool
 		store_summary(
+			std::streampos pos,
 			bool restore_pos);
 
 	private:
@@ -117,6 +124,9 @@ namespace protorecord
 
 		// index_file_ position where the first IndexItem is stored
 		std::streampos first_item_pos_;
+
+		// the total number of recorded samples thus far
+		uint64_t total_item_count_;
 
 	};
 
@@ -165,6 +175,9 @@ namespace protorecord
 				// store the IndexItem to index file
 				index_item_.SerializeToArray((void*)buffer_.data(),buffer_.size());
 				index_file_.write(buffer_.data(),index_item_.ByteSizeLong());
+
+				// increment item count
+				total_item_count_++;
 			}
 		}
 

@@ -25,6 +25,7 @@ namespace protorecord
 	 , index_item_()
 	 , index_file_()
 	 , data_file_()
+	 , total_item_count_(0)
 	{
 		buffer_.resize(64000);
 		initialized_ = init_record(filepath);
@@ -95,7 +96,7 @@ namespace protorecord
 		}
 
 		// initialize index summary
-		index_summary_.set_total_items(0);
+		index_summary_.set_total_items(total_item_count_);
 		index_summary_.set_index_item_size(index_item_.ByteSizeLong());
 		index_summary_.set_start_time_utc(0);// TODO initialize this
 
@@ -111,7 +112,7 @@ namespace protorecord
 
 			// store current summary information in index file
 			summary_pos_ = index_file_.tellp();
-			store_summary(false);// don't restore to previous position
+			store_summary(summary_pos_,false);// don't restore to previous position
 
 			// store location to where the first IndexItem will be stored
 			first_item_pos_ = index_file_.tellp();
@@ -125,21 +126,27 @@ namespace protorecord
 	{
 		if (initialized_)
 		{
-			store_summary(true);
+			store_summary(summary_pos_,true);
 			index_file_.close();
 			data_file_.close();
 		}
 	}
 
-	void
+	bool
 	Writer::store_summary(
+		std::streampos pos,
 		bool restore_pos)
 	{
-		if (initialized_)
+		bool okay = index_file_.good();
+
+		if (okay)
 		{
 			// cache current position and seek to where index summary is stored
 			auto prev_pos = index_file_.tellp();
-			index_file_.seekp(summary_pos_);
+			index_file_.seekp(pos);
+
+			// update total count
+			index_summary_.set_total_items(total_item_count_);
 
 			// save latest index summary
 			index_summary_.SerializeToArray((void*)buffer_.data(),buffer_.size());
@@ -151,6 +158,8 @@ namespace protorecord
 				index_file_.seekp(prev_pos);
 			}
 		}
+
+		return okay;
 	}
 
 	//-------------------------------------------------------------------------
