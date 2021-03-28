@@ -45,5 +45,5 @@ install(FILES "${PROTORECORD_INCLUDE_DIR}/protorecord.h"
 # install the exported targets file
 install(
 	EXPORT protorecord-targets
-	DESTINATION "lib/protorecord"
+	DESTINATION "lib/cmake/protorecord"
 )
