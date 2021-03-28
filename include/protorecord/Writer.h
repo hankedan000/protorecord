@@ -61,9 +61,13 @@ namespace protorecord
 		 * Stores the finalized index to disk and closes all opened
 		 * file descriptors. This method is automatically called by
 		 * class's destructor.
+		 *
+		 * @param[in] store_readme
+		 * Is true, a README.md will be stored inside the record
 		 */
 		void
-		close();
+		close(
+			bool store_readme = true);
 
 	protected:
 		/**
@@ -112,6 +116,9 @@ namespace protorecord
 
 		// the current index item
 		protorecord::IndexItem index_item_;
+
+		// the records filepath
+		std::string record_path_;
 
 		// the opened index file for this recording
 		std::ofstream index_file_;

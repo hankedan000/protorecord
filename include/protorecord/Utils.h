@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <sstream>
 
 #include "ProtorecordTypes.pb.h"
 #include "protorecord/version.h"
@@ -38,6 +39,22 @@ namespace protorecord
 	patch_version()
 	{
 		return PROTORECORD_VERSION_PATCH;
+	}
+
+	/**
+	 * @return
+	 * Version string formatted like "<major>.<minor>.<patch>"
+	 */
+	inline
+	std::string
+	version_to_string(
+		const Version &version)
+	{
+		std::stringstream ss;
+		ss << version.major() << ".";
+		ss << version.minor() << ".";
+		ss << version.patch();
+		return ss.str();
 	}
 
 	/**

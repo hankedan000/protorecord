@@ -23,6 +23,7 @@ namespace protorecord
 	 , timestamping_enabled_(enable_timestamping)
 	 , index_summary_()
 	 , index_item_()
+	 , record_path_(filepath)
 	 , index_file_()
 	 , data_file_()
 	 , total_item_count_(0)
@@ -45,13 +46,35 @@ namespace protorecord
 	//-------------------------------------------------------------------------
 
 	void
-	Writer::close()
+	Writer::close(
+		bool store_readme)
 	{
 		if (initialized_)
 		{
 			store_summary(PROTORECORD_VERSION_SIZE,true);
 			index_file_.close();
 			data_file_.close();
+
+			if (store_readme)
+			{
+				const auto README_FILEPATH = record_path_ + "/README.md";
+				std::ofstream readme(README_FILEPATH);
+				if (readme.good())
+				{
+					const std::string REPO_URL("https://github.com/hankedan000/protorecord");
+					readme << "**THIS FILE IS AUTO GENERATED AND IT'S FORMAT SHOULD NOT BE ASSUMED**" << std::endl;
+					readme << "This directory was created with the [protorecord](" << REPO_URL << ") library." << std::endl;
+					readme << "protorecord version: " << version_to_string(this_version()) << std::endl;
+					time_t rawtime = index_summary_.start_time_utc() / 1000000.0;
+					struct tm *timeinfo = localtime(&rawtime);
+					char buffer[1024];
+					strftime(buffer,sizeof(buffer),"%A %B %d, %G %r",timeinfo);
+					readme << "Creation Time: " << buffer << std::endl;
+					readme << "Items: " << index_summary_.total_items() << std::endl;
+
+					readme.close();
+				}
+			}
 		}
 		initialized_ = false;
 	}
