@@ -46,7 +46,13 @@ namespace protorecord
 	void
 	Writer::close()
 	{
-		internal_close();
+		if (initialized_)
+		{
+			store_summary(VERSION_SIZE,true);
+			index_file_.close();
+			data_file_.close();
+		}
+		initialized_ = false;
 	}
 
 	//-------------------------------------------------------------------------
@@ -128,18 +134,6 @@ namespace protorecord
 		}
 
 		return okay;
-	}
-
-	void
-	Writer::internal_close()
-	{
-		if (initialized_)
-		{
-			store_summary(VERSION_SIZE,true);
-			index_file_.close();
-			data_file_.close();
-		}
-		initialized_ = false;
 	}
 
 	bool

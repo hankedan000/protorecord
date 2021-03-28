@@ -58,7 +58,9 @@ namespace protorecord
 			const PROTOBUF_T &pb);
 
 		/**
-		 * Closes the record. Will not be able to write anymore.
+		 * Stores the finalized index to disk and closes all opened
+		 * file descriptors. This method is automatically called by
+		 * class's destructor.
 		 */
 		void
 		close();
@@ -78,14 +80,6 @@ namespace protorecord
 		bool
 		init_record(
 			const std::string &filepath);
-
-		/**
-		 * Stores the finalized index to disk and closes all opened
-		 * file descriptors. This method is automatically called by
-		 * class's destructor.
-		 */
-		void
-		internal_close();
 
 		/**
 		 * Will store the current IndexSummary to disk
