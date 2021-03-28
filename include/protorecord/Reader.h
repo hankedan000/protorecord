@@ -94,6 +94,13 @@ namespace protorecord
 
 		/**
 		 * @return
+		 * True if the record's HAS_ASSUMED_DATA flag is set, false otherwise.
+		 */
+		bool
+		has_assumed_data() const;
+
+		/**
+		 * @return
 		 * True if the record contains timestamped items, false otherwise.
 		 */
 		bool
@@ -169,6 +176,17 @@ namespace protorecord
 		get_index_item(
 			uint64_t item_idx,
 			protorecord::IndexItem &item_out);
+
+		/**
+		 * @param[in] flag
+		 * The flag to check for
+		 *
+		 * @return
+		 * True if the record flags are valid and the flag is set
+		 */
+		bool
+		is_flag_set(
+			uint32_t flag) const;
 
 	private:
 		// set to true if the writer was initialized succesfully

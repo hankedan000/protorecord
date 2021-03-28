@@ -72,13 +72,15 @@ namespace protorecord
 	}
 
 	bool
+	Reader::has_assumed_data() const
+	{
+		return is_flag_set(protorecord::Flags::HAS_ASSUMED_DATA);
+	}
+
+	bool
 	Reader::has_timestamps() const
 	{
-		auto flags = this->flags();
-		bool has_timestamps = true;
-		has_timestamps = has_timestamps && (flags & protorecord::Flags::VALID);
-		has_timestamps = has_timestamps && (flags & protorecord::Flags::HAS_TIMESTAMPS);
-		return has_timestamps;
+		return is_flag_set(protorecord::Flags::HAS_TIMESTAMPS);
 	}
 
 	bool
@@ -153,6 +155,7 @@ namespace protorecord
 			// read library version from record
 			if (okay)
 			{
+				memset((void*)buffer_.data(),0,PROTORECORD_VERSION_SIZE);
 				index_file_.read(buffer_.data(),PROTORECORD_VERSION_SIZE);
 				if ( ! index_file_.eof())
 				{
@@ -179,6 +182,7 @@ namespace protorecord
 			// read IndexSummary from record
 			if (okay)
 			{
+				memset((void*)buffer_.data(),0,PROTORECORD_INDEX_SUMMARY_SIZE);
 				index_file_.read(buffer_.data(),PROTORECORD_INDEX_SUMMARY_SIZE);
 
 				if ( ! index_file_.eof())
@@ -240,6 +244,7 @@ namespace protorecord
 
 			// seek to position and read
 			index_file_.seekg(pos);
+			memset((void*)buffer_.data(),0,index_summary_.index_item_size());
 			index_file_.read(buffer_.data(),index_summary_.index_item_size());
 			if (index_file_.eof())
 			{
@@ -268,6 +273,17 @@ namespace protorecord
 		}
 
 		return okay;
+	}
+
+	bool
+	Reader::is_flag_set(
+		uint32_t flag) const
+	{
+		auto flags = this->flags();
+		bool is_set = true;
+		is_set = is_set && (flags & protorecord::Flags::VALID);
+		is_set = is_set && (flags & flag);
+		return is_set;
 	}
 
 	//-------------------------------------------------------------------------

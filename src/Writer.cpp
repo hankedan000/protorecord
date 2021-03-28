@@ -50,7 +50,15 @@ namespace protorecord
 		const void *msg_data,
 		uint32_t msg_data_size)
 	{
-		bool okay = write_item_data(msg_data,msg_data_size);
+		bool okay = initialized_;
+
+		if (timestamping_enabled_)
+		{
+			// TODO should probably be using a monotonic clock source here
+			index_item_.set_timestamp((get_time_now() - start_time_).count());
+		}
+
+		okay = okay && write_item_data(msg_data,msg_data_size);
 
 		if (okay)
 		{
@@ -167,6 +175,7 @@ namespace protorecord
 			version.set_major(protorecord::major_version());
 			version.set_minor(protorecord::minor_version());
 			version.set_patch(protorecord::patch_version());
+			memset((void*)buffer_.data(),0,PROTORECORD_VERSION_SIZE);
 			version.SerializeToArray((void*)buffer_.data(),buffer_.size());
 			index_file_.write(buffer_.data(),PROTORECORD_VERSION_SIZE);
 
@@ -195,7 +204,8 @@ namespace protorecord
 			index_summary_.set_flags(flags_);
 
 			// save latest index summary
-			index_summary_.SerializeToArray((void*)buffer_.data(),buffer_.size());
+			memset((void*)buffer_.data(),0,PROTORECORD_INDEX_SUMMARY_SIZE);
+			okay = okay && index_summary_.SerializeToArray((void*)buffer_.data(),buffer_.size());
 			index_file_.write(buffer_.data(),PROTORECORD_INDEX_SUMMARY_SIZE);
 
 			if (restore_pos)
@@ -225,19 +235,18 @@ namespace protorecord
 			 */
 			index_item_.set_offset(data_file_.tellp());
 			index_item_.set_size(item_data_size);
-			if (index_item_.size() < buffer_.size())
-			{// grow buffer
-				buffer_.resize(index_item_.size() * 2);
-			}
 
-			data_file_.write(buffer_.data(),item_data_size);
+			data_file_.write((const char *)item_data,item_data_size);
 
 			// update index file
-			index_item_.SerializeToArray((void*)buffer_.data(),buffer_.size());
-			index_file_.write(buffer_.data(),index_summary_.index_item_size());
-
-			// increment item count
-			total_item_count_++;
+			memset((void*)buffer_.data(),0,index_summary_.index_item_size());
+			okay = okay && index_item_.SerializeToArray((void*)buffer_.data(),buffer_.size());
+			if (okay)
+			{
+				index_file_.write(buffer_.data(),index_summary_.index_item_size());
+				// increment item count
+				total_item_count_++;
+			}
 		}
 
 		return okay;
