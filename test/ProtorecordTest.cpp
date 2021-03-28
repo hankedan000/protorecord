@@ -104,6 +104,33 @@ namespace protorecord
 		}
 	}
 
+	void
+	ProtorecordTest::version()
+	{
+		const std::string RECORD_PATH(TEST_TMP_PATH + "/" + __func__);
+		const size_t NUM_ITEMS = 0;
+
+		Writer writer(RECORD_PATH);
+		writer.close();
+
+		Reader reader(RECORD_PATH);
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,reader.size());
+
+		Version actual = reader.get_version();
+		CPPUNIT_ASSERT_EQUAL((int)PROTORECORD_VERSION_MAJOR,(int)actual.major());
+		CPPUNIT_ASSERT_EQUAL((int)PROTORECORD_VERSION_MINOR,(int)actual.minor());
+		CPPUNIT_ASSERT_EQUAL((int)PROTORECORD_VERSION_PATCH,(int)actual.patch());
+
+		// make sure version is 0.0.0 when record doesn't exist
+		Reader reader_no_version("this_record_does_not_exist");
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,reader_no_version.size());
+
+		actual = reader_no_version.get_version();
+		CPPUNIT_ASSERT_EQUAL((int)0,(int)actual.major());
+		CPPUNIT_ASSERT_EQUAL((int)0,(int)actual.minor());
+		CPPUNIT_ASSERT_EQUAL((int)0,(int)actual.patch());
+	}
+
 }// protorecord
 
 int main()
