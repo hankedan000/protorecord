@@ -145,7 +145,8 @@ namespace protorecord
 		// initialize index summary
 		index_summary_.set_total_items(0);
 		index_summary_.set_index_item_size(index_item_.ByteSizeLong());
-		index_summary_.set_start_time_utc(0);// TODO initialize this
+		index_summary_.set_start_time_utc(0);
+		index_summary_.set_flags(0);
 
 		try
 		{

@@ -1,5 +1,5 @@
 # protorecord
-Small library for recording protocol buffer messages to disk.
+Small library for writing/reading google::protobuf messages to disk.
 
 # Building
 This project uses a pretty standard cmake build procedure.
