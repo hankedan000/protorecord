@@ -30,7 +30,7 @@ namespace protorecord
 	 , flags_(protorecord::Flags::VALID)
 	{
 		buffer_.resize(64000);
-		initialized_ = init_record(filepath);
+		initialized_ = init_record(filepath,true);
 	}
 
 	/**
@@ -108,12 +108,17 @@ namespace protorecord
 
 	bool
 	Writer::init_record(
-			const std::string &filepath)
+			const std::string &filepath,
+			bool allow_overwrite)
 	{
 		bool okay = true;
 
 		int status = mkdir(filepath.c_str(),0777);
-		if (status < 0)
+		if (status < 0 && allow_overwrite && errno == EEXIST)
+		{
+			// allow overwrite
+		}
+		else if (status < 0)
 		{
 			std::cerr << __func__ << " - failed to create record. " <<
 				"error: " << strerror(errno) << "; "

@@ -102,12 +102,16 @@ namespace protorecord
 		 * @param[in] filepath
 		 * The path to attempt to initial the recording in
 		 *
+		 * @param[in] allow_overwrite
+		 * True if overwriting an existing record is allowed
+		 *
 		 * @return
 		 * True if successfully initialized, false otherwise
 		 */
 		bool
 		init_record(
-			const std::string &filepath);
+			const std::string &filepath,
+			bool allow_overwrite);
 
 		/**
 		 * Will store the current IndexSummary to disk
