@@ -57,6 +57,12 @@ namespace protorecord
 		write(
 			const PROTOBUF_T &pb);
 
+		/**
+		 * Closes the record. Will not be able to write anymore.
+		 */
+		void
+		close();
+
 	protected:
 		/**
 		 * Initializes the recording for writing. This method is
@@ -79,7 +85,7 @@ namespace protorecord
 		 * class's destructor.
 		 */
 		void
-		close();
+		internal_close();
 
 		/**
 		 * Will store the current IndexSummary to disk

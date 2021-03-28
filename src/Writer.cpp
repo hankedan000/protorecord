@@ -43,6 +43,12 @@ namespace protorecord
 	// public methods
 	//-------------------------------------------------------------------------
 
+	void
+	Writer::close()
+	{
+		internal_close();
+	}
+
 	//-------------------------------------------------------------------------
 	// protected methods
 	//-------------------------------------------------------------------------
@@ -125,7 +131,7 @@ namespace protorecord
 	}
 
 	void
-	Writer::close()
+	Writer::internal_close()
 	{
 		if (initialized_)
 		{
@@ -133,6 +139,7 @@ namespace protorecord
 			index_file_.close();
 			data_file_.close();
 		}
+		initialized_ = false;
 	}
 
 	bool
