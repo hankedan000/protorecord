@@ -22,6 +22,7 @@ set_target_properties(protorecord PROPERTIES
 )
 install(
 	TARGETS protorecord
+	EXPORT protorecord-targets
 	LIBRARY
 		DESTINATION lib
 	PUBLIC_HEADER
