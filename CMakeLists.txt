@@ -32,8 +32,12 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 # protorecord public includes directory
-set(PROTORECORD_PUBLIC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include/protorecord")
+set(PROTORECORD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
 add_subdirectory(src)
 add_subdirectory(demo)
+
+# install main header file
+install(FILES "${PROTORECORD_INCLUDE_DIR}/protorecord.h"
+	TYPE INCLUDE)
