@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "ProtorecordIndex.pb.h"
-#include "protorecord/Sizes.h"
+#include "protorecord/Constants.h"
 #include "protorecord/Utils.h"
 
 namespace protorecord
@@ -127,6 +127,9 @@ namespace protorecord
 
 		// the time when the recording was created
 		std::chrono::microseconds start_time_;
+
+		// bitmask of protorecord::Flags::*
+		uint32_t flags_;
 
 	};
 

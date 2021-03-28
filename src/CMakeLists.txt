@@ -14,7 +14,7 @@ target_link_libraries(protorecord
 list(APPEND protorecord_PUBLIC_HEADERS
 	"${PROTORECORD_INCLUDE_DIR}/protorecord/Writer.h"
 	"${PROTORECORD_INCLUDE_DIR}/protorecord/Reader.h"
-	"${PROTORECORD_INCLUDE_DIR}/protorecord/Sizes.h"
+	"${PROTORECORD_INCLUDE_DIR}/protorecord/Constants.h"
 	"${PROTORECORD_INCLUDE_DIR}/protorecord/Utils.h"
 	"${CMAKE_BINARY_DIR}/include/protorecord/version.h"
 )

@@ -49,6 +49,26 @@ namespace protorecord
 		return 0;
 	}
 
+	uint32_t
+	Reader::flags() const
+	{
+		if (initialized_)
+		{
+			return index_summary_.flags();
+		}
+		return 0;
+	}
+
+	bool
+	Reader::has_timestamps() const
+	{
+		auto flags = this->flags();
+		bool has_timestamps = true;
+		has_timestamps = has_timestamps && (flags & protorecord::Flags::VALID);
+		has_timestamps = has_timestamps && (flags & protorecord::Flags::HAS_TIMESTAMPS);
+		return has_timestamps;
+	}
+
 	protorecord::Version
 	Reader::get_version() const
 	{
@@ -112,7 +132,7 @@ namespace protorecord
 			// read library version from record
 			if (okay)
 			{
-				index_file_.read(buffer_.data(),VERSION_SIZE);
+				index_file_.read(buffer_.data(),PROTORECORD_VERSION_SIZE);
 				if ( ! index_file_.eof())
 				{
 					version_.ParseFromArray(buffer_.data(),buffer_.size());
@@ -138,7 +158,7 @@ namespace protorecord
 			// read IndexSummary from record
 			if (okay)
 			{
-				index_file_.read(buffer_.data(),INDEX_SUMMARY_SIZE);
+				index_file_.read(buffer_.data(),PROTORECORD_INDEX_SUMMARY_SIZE);
 
 				if ( ! index_file_.eof())
 				{

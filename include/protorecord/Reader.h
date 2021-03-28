@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "ProtorecordIndex.pb.h"
-#include "protorecord/Sizes.h"
+#include "protorecord/Constants.h"
 
 namespace protorecord
 {
@@ -54,6 +54,20 @@ namespace protorecord
 		 */
 		size_t
 		size() const;
+
+		/**
+		 * @return
+		 * The record's bit mask of protorecord::Flags::* constants.
+		 */
+		uint32_t
+		flags() const;
+
+		/**
+		 * @return
+		 * True if the record contains timestamped items, false otherwise.
+		 */
+		bool
+		has_timestamps() const;
 
 		/**
 		 * @return

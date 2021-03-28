@@ -27,4 +27,7 @@ message IndexSummary {
 
 	// record start time in UNIX epoch time (microseconds)
 	required uint64 start_time_utc = 3;
+
+	// a bit mask of protorecord::Flags::* values
+	required uint32 flags = 4;
 }

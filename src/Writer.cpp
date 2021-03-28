@@ -26,6 +26,7 @@ namespace protorecord
 	 , index_file_()
 	 , data_file_()
 	 , total_item_count_(0)
+	 , flags_(protorecord::Flags::VALID)
 	{
 		buffer_.resize(64000);
 		initialized_ = init_record(filepath);
@@ -48,7 +49,7 @@ namespace protorecord
 	{
 		if (initialized_)
 		{
-			store_summary(VERSION_SIZE,true);
+			store_summary(PROTORECORD_VERSION_SIZE,true);
 			index_file_.close();
 			data_file_.close();
 		}
@@ -103,13 +104,14 @@ namespace protorecord
 		}
 
 		// intialize index item
-		uint32_t item_size = INDEX_ITEM_SIZE_NO_TIMESTAMP;
+		uint32_t item_size = PROTORECORD_INDEX_ITEM_SIZE_NO_TIMESTAMP;
 		index_item_.set_offset(0);
 		index_item_.set_size(0);
 		if (timestamping_enabled_)
 		{
-			item_size = INDEX_ITEM_SIZE_TIMESTAMP;
+			item_size = PROTORECORD_INDEX_ITEM_SIZE_TIMESTAMP;
 			index_item_.set_timestamp(0);
+			flags_ |= protorecord::Flags::HAS_TIMESTAMPS;
 		}
 
 		start_time_ = get_time_now();
@@ -118,6 +120,7 @@ namespace protorecord
 		index_summary_.set_total_items(total_item_count_);
 		index_summary_.set_index_item_size(item_size);
 		index_summary_.set_start_time_utc(start_time_.count());
+		index_summary_.set_flags(flags_);
 
 		if (okay)
 		{
@@ -127,10 +130,10 @@ namespace protorecord
 			version.set_minor(protorecord::minor_version());
 			version.set_patch(protorecord::patch_version());
 			version.SerializeToArray((void*)buffer_.data(),buffer_.size());
-			index_file_.write(buffer_.data(),VERSION_SIZE);
+			index_file_.write(buffer_.data(),PROTORECORD_VERSION_SIZE);
 
 			// store current summary information in index file
-			store_summary(VERSION_SIZE,false);// don't restore to previous position
+			store_summary(PROTORECORD_VERSION_SIZE,false);// don't restore to previous position
 		}
 
 		return okay;
@@ -149,12 +152,13 @@ namespace protorecord
 			auto prev_pos = index_file_.tellp();
 			index_file_.seekp(pos);
 
-			// update total count
+			// update fields based on member variables
 			index_summary_.set_total_items(total_item_count_);
+			index_summary_.set_flags(flags_);
 
 			// save latest index summary
 			index_summary_.SerializeToArray((void*)buffer_.data(),buffer_.size());
-			index_file_.write(buffer_.data(),INDEX_SUMMARY_SIZE);
+			index_file_.write(buffer_.data(),PROTORECORD_INDEX_SUMMARY_SIZE);
 
 			if (restore_pos)
 			{
