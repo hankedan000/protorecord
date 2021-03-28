@@ -22,6 +22,7 @@ namespace protorecord
 		void simple_write_read();
 
 	private:
+		const std::string TEST_TMP_PATH = "test_tmp";
 
 	};
 
