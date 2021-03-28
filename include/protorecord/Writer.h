@@ -1,11 +1,13 @@
 #pragma once
 
+#include <chrono>
 #include <string>
 #include <fstream>
 #include <vector>
 
 #include "ProtorecordIndex.pb.h"
 #include "protorecord/Sizes.h"
+#include "protorecord/Utils.h"
 
 namespace protorecord
 {
@@ -123,6 +125,9 @@ namespace protorecord
 		// the total number of recorded samples thus far
 		uint64_t total_item_count_;
 
+		// the time when the recording was created
+		std::chrono::microseconds start_time_;
+
 	};
 
 	template<class PROTOBUF_T>
@@ -136,8 +141,8 @@ namespace protorecord
 		{
 			if (timestamping_enabled_)
 			{
-				// TODO implement timestamping
-				index_item_.set_timestamp(0);
+				// TODO should probably be using a monotonic clock source here
+				index_item_.set_timestamp((get_time_now() - start_time_).count());
 			}
 
 			index_item_.set_offset(data_file_.tellp());
@@ -169,7 +174,7 @@ namespace protorecord
 			{
 				// store the IndexItem to index file
 				index_item_.SerializeToArray((void*)buffer_.data(),buffer_.size());
-				index_file_.write(buffer_.data(),INDEX_ITEM_SIZE);
+				index_file_.write(buffer_.data(),index_summary_.index_item_size());
 
 				// increment item count
 				total_item_count_++;

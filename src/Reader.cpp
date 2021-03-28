@@ -181,7 +181,7 @@ namespace protorecord
 
 		if (okay)
 		{
-			index_file_.read(buffer_.data(),INDEX_ITEM_SIZE);
+			index_file_.read(buffer_.data(),index_summary_.index_item_size());
 			if (index_file_.eof())
 			{
 				std::cerr << __func__ << " - " <<

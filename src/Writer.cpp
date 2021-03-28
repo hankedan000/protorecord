@@ -91,17 +91,21 @@ namespace protorecord
 		}
 
 		// intialize index item
+		uint32_t item_size = INDEX_ITEM_SIZE_NO_TIMESTAMP;
 		index_item_.set_offset(0);
 		index_item_.set_size(0);
 		if (timestamping_enabled_)
 		{
+			item_size = INDEX_ITEM_SIZE_TIMESTAMP;
 			index_item_.set_timestamp(0);
 		}
 
+		start_time_ = get_time_now();
+
 		// initialize index summary
 		index_summary_.set_total_items(total_item_count_);
-		index_summary_.set_index_item_size(INDEX_ITEM_SIZE);
-		index_summary_.set_start_time_utc(0);// TODO initialize this
+		index_summary_.set_index_item_size(item_size);
+		index_summary_.set_start_time_utc(start_time_.count());
 
 		if (okay)
 		{
