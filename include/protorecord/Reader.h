@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "ProtorecordIndex.pb.h"
+#include "protorecord/Sizes.h"
 
 namespace protorecord
 {
@@ -119,12 +120,6 @@ namespace protorecord
 
 		// buffer used to deserialize data from files
 		std::vector<char> buffer_;
-
-		// index_file_ position where the IndexSummary is stored
-		std::streampos summary_pos_;
-
-		// index_file_ position where the first IndexItem is stored
-		std::streampos first_item_pos_;
 
 		// the next item index the class will read from
 		uint64_t next_item_num_;

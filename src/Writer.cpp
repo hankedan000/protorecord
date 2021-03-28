@@ -100,7 +100,7 @@ namespace protorecord
 
 		// initialize index summary
 		index_summary_.set_total_items(total_item_count_);
-		index_summary_.set_index_item_size(index_item_.ByteSizeLong());
+		index_summary_.set_index_item_size(INDEX_ITEM_SIZE);
 		index_summary_.set_start_time_utc(0);// TODO initialize this
 
 		if (okay)
@@ -111,14 +111,10 @@ namespace protorecord
 			version.set_minor(protorecord::minor_version());
 			version.set_patch(protorecord::patch_version());
 			version.SerializeToArray((void*)buffer_.data(),buffer_.size());
-			index_file_.write(buffer_.data(),version.ByteSizeLong());
+			index_file_.write(buffer_.data(),VERSION_SIZE);
 
 			// store current summary information in index file
-			summary_pos_ = index_file_.tellp();
-			store_summary(summary_pos_,false);// don't restore to previous position
-
-			// store location to where the first IndexItem will be stored
-			first_item_pos_ = index_file_.tellp();
+			store_summary(VERSION_SIZE,false);// don't restore to previous position
 		}
 
 		return okay;
@@ -129,7 +125,7 @@ namespace protorecord
 	{
 		if (initialized_)
 		{
-			store_summary(summary_pos_,true);
+			store_summary(VERSION_SIZE,true);
 			index_file_.close();
 			data_file_.close();
 		}
@@ -153,7 +149,7 @@ namespace protorecord
 
 			// save latest index summary
 			index_summary_.SerializeToArray((void*)buffer_.data(),buffer_.size());
-			index_file_.write(buffer_.data(),index_summary_.ByteSizeLong());
+			index_file_.write(buffer_.data(),INDEX_SUMMARY_SIZE);
 
 			if (restore_pos)
 			{

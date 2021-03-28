@@ -102,7 +102,7 @@ namespace protorecord
 			// read library version from record
 			if (okay)
 			{
-				index_file_.read(buffer_.data(),version_.ByteSizeLong());
+				index_file_.read(buffer_.data(),VERSION_SIZE);
 				if ( ! index_file_.eof())
 				{
 					version_.ParseFromArray(buffer_.data(),buffer_.size());
@@ -128,10 +128,7 @@ namespace protorecord
 			// read IndexSummary from record
 			if (okay)
 			{
-				// store current summary information in index file
-				summary_pos_ = index_file_.tellg();
-
-				index_file_.read(buffer_.data(),index_summary_.ByteSizeLong());
+				index_file_.read(buffer_.data(),INDEX_SUMMARY_SIZE);
 
 				if ( ! index_file_.eof())
 				{
@@ -143,12 +140,6 @@ namespace protorecord
 						"index file too small to parse IndexSummary!" << std::endl;
 					okay = false;
 				}
-			}
-
-			if (okay)
-			{
-				// store location to where the first IndexItem is stored
-				first_item_pos_ = index_file_.tellg();
 			}
 		}
 		catch (const std::exception &ex)
@@ -190,7 +181,7 @@ namespace protorecord
 
 		if (okay)
 		{
-			index_file_.read(buffer_.data(),index_summary_.index_item_size());
+			index_file_.read(buffer_.data(),INDEX_ITEM_SIZE);
 			if (index_file_.eof())
 			{
 				std::cerr << __func__ << " - " <<

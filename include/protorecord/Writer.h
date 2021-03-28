@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "ProtorecordIndex.pb.h"
+#include "protorecord/Sizes.h"
 
 namespace protorecord
 {
@@ -119,12 +120,6 @@ namespace protorecord
 		// shared buffer used to serialize data to files
 		std::vector<char> buffer_;
 
-		// index_file_ position where the IndexSummary is stored
-		std::streampos summary_pos_;
-
-		// index_file_ position where the first IndexItem is stored
-		std::streampos first_item_pos_;
-
 		// the total number of recorded samples thus far
 		uint64_t total_item_count_;
 
@@ -174,7 +169,7 @@ namespace protorecord
 			{
 				// store the IndexItem to index file
 				index_item_.SerializeToArray((void*)buffer_.data(),buffer_.size());
-				index_file_.write(buffer_.data(),index_item_.ByteSizeLong());
+				index_file_.write(buffer_.data(),INDEX_ITEM_SIZE);
 
 				// increment item count
 				total_item_count_++;
