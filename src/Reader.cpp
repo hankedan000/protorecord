@@ -39,6 +39,16 @@ namespace protorecord
 			next_item_num_ < index_summary_.total_items();
 	}
 
+	size_t
+	Reader::size() const
+	{
+		if (initialized_)
+		{
+			return index_summary_.total_items();
+		}
+		return 0;
+	}
+
 	protorecord::Version
 	Reader::get_version() const
 	{

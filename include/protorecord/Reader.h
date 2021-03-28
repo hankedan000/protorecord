@@ -50,6 +50,13 @@ namespace protorecord
 
 		/**
 		 * @return
+		 * The number of items that can be read from the record
+		 */
+		size_t
+		size() const;
+
+		/**
+		 * @return
 		 * The protorecord library version that the record was made with.
 		 * This can be used to determine version incompatibilities. Returns
 		 * version 0.0.0 if Reader was not initialized properly.
