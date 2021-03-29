@@ -82,6 +82,13 @@ namespace protorecord
 			uint32_t msg_data_size);
 
 		/**
+		 * @return
+		 * The number of items that have been written thus far
+		 */
+		size_t
+		size() const;
+
+		/**
 		 * Stores the finalized index to disk and closes all opened
 		 * file descriptors. This method is automatically called by
 		 * class's destructor.

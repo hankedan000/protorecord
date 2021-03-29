@@ -49,6 +49,8 @@ namespace protorecord
 			CPPUNIT_ASSERT(writer.write(msg));
 		}
 
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,writer.size());
+
 		writer.close();
 
 		Reader reader(RECORD_PATH);
@@ -85,6 +87,8 @@ namespace protorecord
 			msg.set_myint(i);
 			CPPUNIT_ASSERT(writer.write(msg));
 		}
+
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,writer.size());
 
 		writer.close();
 
@@ -125,6 +129,8 @@ namespace protorecord
 			CPPUNIT_ASSERT(writer.write_assumed((void*)buffer,msg.ByteSizeLong()));
 		}
 
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,writer.size());
+
 		writer.close();
 
 		Reader reader(RECORD_PATH);
@@ -162,6 +168,8 @@ namespace protorecord
 			CPPUNIT_ASSERT(writer1.write(msg));
 		}
 
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,writer1.size());
+
 		writer1.close();
 
 		// ----------------------
@@ -174,6 +182,8 @@ namespace protorecord
 			msg.set_myint(i);
 			CPPUNIT_ASSERT(writer2.write(msg));
 		}
+
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,writer2.size());
 
 		writer2.close();
 
@@ -204,6 +214,7 @@ namespace protorecord
 		const size_t NUM_ITEMS = 0;
 
 		Writer writer(RECORD_PATH);
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,writer.size());
 		writer.close();
 
 		Reader reader(RECORD_PATH);
@@ -242,6 +253,8 @@ namespace protorecord
 			CPPUNIT_ASSERT(writer.write(msg));
 			usleep(SLEEP_INTERVAL);// wait ~100ms between writes
 		}
+		
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,writer.size());
 
 		writer.close();
 

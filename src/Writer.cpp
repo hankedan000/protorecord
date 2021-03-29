@@ -68,6 +68,12 @@ namespace protorecord
 		return okay;
 	}
 
+	size_t
+	Writer::size() const
+	{
+		return total_item_count_;
+	}
+
 	void
 	Writer::close(
 		bool store_readme)
