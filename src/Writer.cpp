@@ -10,6 +10,11 @@ namespace protorecord
 	// constructors/destructors
 	//-------------------------------------------------------------------------
 
+	Writer::Writer()
+	 : Writer("")
+	{
+	}
+
 	Writer::Writer(
 		const std::string &filepath)
 	 : Writer(filepath,false)
@@ -23,14 +28,14 @@ namespace protorecord
 	 , timestamping_enabled_(enable_timestamping)
 	 , index_summary_()
 	 , index_item_()
-	 , record_path_(filepath)
+	 , record_path_()
 	 , index_file_()
 	 , data_file_()
 	 , total_item_count_(0)
 	 , flags_(protorecord::Flags::VALID)
 	{
 		buffer_.resize(64000);
-		initialized_ = init_record(filepath,true);
+		open(filepath);
 	}
 
 	/**
@@ -44,6 +49,29 @@ namespace protorecord
 	//-------------------------------------------------------------------------
 	// public methods
 	//-------------------------------------------------------------------------
+
+	bool
+	Writer::open(
+		const std::string &filepath)
+	{
+		if (initialized_)
+		{
+			// don't reinitialize file
+			std::cerr << "Writer already intialized!" << std::endl;
+			return false;
+		}
+
+		if (filepath != "")
+		{
+			if (init_record(filepath,true))
+			{
+				initialized_ = true;
+				record_path_ = filepath;
+			}
+		}
+
+		return initialized_;
+	}
 
 	bool
 	Writer::write_assumed(

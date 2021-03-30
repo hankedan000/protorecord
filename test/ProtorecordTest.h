@@ -14,6 +14,7 @@ namespace protorecord
 		CPPUNIT_TEST(long_write_read);
 		CPPUNIT_TEST(assumed_write_read);
 		CPPUNIT_TEST(overwrite);
+		CPPUNIT_TEST(late_opened_writer);
 		CPPUNIT_TEST(version);
 		CPPUNIT_TEST(timestamping);
 		CPPUNIT_TEST_SUITE_END();
@@ -28,6 +29,7 @@ namespace protorecord
 		void long_write_read();
 		void assumed_write_read();
 		void overwrite();
+		void late_opened_writer();
 		void version();
 		void timestamping();
 

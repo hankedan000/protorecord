@@ -15,6 +15,11 @@ namespace protorecord
 	{
 	public:
 		/**
+		 * Default Constructor
+		 */
+		Writer();
+
+		/**
 		 * Constructor
 		 *
 		 * @param[in] filepath
@@ -42,6 +47,20 @@ namespace protorecord
 		 * Destructor
 		 */
 		~Writer();
+
+		/**
+		 * Opens a record for writing
+		 * 
+		 * @param[in] filepath
+		 * path to save record to
+		 *
+		 * @return
+		 * True if the Writer was successfully initialized, false if the
+		 * record creation failed, or if the Writer was already opened.
+		 */
+		bool
+		open(
+			const std::string &filepath);
 
 		/**
 		 * Write a protobuf message to the record

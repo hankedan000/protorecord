@@ -208,6 +208,48 @@ namespace protorecord
 	}
 
 	void
+	ProtorecordTest::late_opened_writer()
+	{
+		const std::string RECORD_PATH(TEST_TMP_PATH + "/" + __func__);
+		const size_t NUM_ITEMS = 10;
+
+		Writer writer;
+
+		// open the Writer after construction (ie "late")
+		CPPUNIT_ASSERT(writer.open(RECORD_PATH));
+
+		BasicMessage msg;
+		msg.set_mystring("helloworld");
+
+		for (unsigned int i=0; i<NUM_ITEMS; i++)
+		{
+			msg.set_myint(i);
+			CPPUNIT_ASSERT(writer.write(msg));
+		}
+
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,writer.size());
+
+		writer.close();
+
+		Reader reader(RECORD_PATH);
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,reader.size());
+		CPPUNIT_ASSERT_EQUAL(false,reader.has_timestamps());
+		CPPUNIT_ASSERT_EQUAL(false,reader.has_assumed_data());
+
+		unsigned int expect = 0;
+		while (reader.has_next())
+		{
+			CPPUNIT_ASSERT_MESSAGE(
+				"reader ran away!",
+				expect < NUM_ITEMS);
+			CPPUNIT_ASSERT(reader.take_next(msg));
+			CPPUNIT_ASSERT_EQUAL(expect,msg.myint());
+			CPPUNIT_ASSERT_EQUAL(std::string("helloworld"),msg.mystring());
+			expect++;
+		}
+	}
+
+	void
 	ProtorecordTest::version()
 	{
 		const std::string RECORD_PATH(TEST_TMP_PATH + "/" + __func__);
