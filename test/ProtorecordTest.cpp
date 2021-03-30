@@ -250,6 +250,87 @@ namespace protorecord
 	}
 
 	void
+	ProtorecordTest::reused_writer()
+	{
+		const std::string RECORD1_PATH(TEST_TMP_PATH + "/" + __func__ + "1");
+		const std::string RECORD2_PATH(TEST_TMP_PATH + "/" + __func__ + "2");
+		const size_t NUM_ITEMS = 10;
+
+		Writer writer;
+
+		// open the writer for the first record
+		CPPUNIT_ASSERT(writer.open(RECORD1_PATH));
+
+		BasicMessage msg;
+		msg.set_mystring("this is record1");
+
+		for (unsigned int i=0; i<NUM_ITEMS; i++)
+		{
+			msg.set_myint(i);
+			CPPUNIT_ASSERT(writer.write(msg));
+		}
+
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,writer.size());
+
+		writer.close();
+
+		// ----------------------
+
+		Reader reader1(RECORD1_PATH);
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,reader1.size());
+		CPPUNIT_ASSERT_EQUAL(false,reader1.has_timestamps());
+		CPPUNIT_ASSERT_EQUAL(false,reader1.has_assumed_data());
+
+		unsigned int expect = 0;
+		while (reader1.has_next())
+		{
+			CPPUNIT_ASSERT_MESSAGE(
+				"reader ran away!",
+				expect < NUM_ITEMS);
+			CPPUNIT_ASSERT(reader1.take_next(msg));
+			CPPUNIT_ASSERT_EQUAL(expect,msg.myint());
+			CPPUNIT_ASSERT_EQUAL(std::string("this is record1"),msg.mystring());
+			expect++;
+		}
+
+		// ----------------------------------------
+
+		// open the writer for the second record
+		CPPUNIT_ASSERT(writer.open(RECORD2_PATH));
+
+		msg.set_mystring("this is record2");
+
+		for (unsigned int i=0; i<NUM_ITEMS; i++)
+		{
+			msg.set_myint(i);
+			CPPUNIT_ASSERT(writer.write(msg));
+		}
+
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,writer.size());
+
+		writer.close();
+
+		// ----------------------
+
+		Reader reader2(RECORD2_PATH);
+		CPPUNIT_ASSERT_EQUAL(NUM_ITEMS,reader2.size());
+		CPPUNIT_ASSERT_EQUAL(false,reader2.has_timestamps());
+		CPPUNIT_ASSERT_EQUAL(false,reader2.has_assumed_data());
+
+		expect = 0;
+		while (reader2.has_next())
+		{
+			CPPUNIT_ASSERT_MESSAGE(
+				"reader ran away!",
+				expect < NUM_ITEMS);
+			CPPUNIT_ASSERT(reader2.take_next(msg));
+			CPPUNIT_ASSERT_EQUAL(expect,msg.myint());
+			CPPUNIT_ASSERT_EQUAL(std::string("this is record2"),msg.mystring());
+			expect++;
+		}
+	}
+
+	void
 	ProtorecordTest::version()
 	{
 		const std::string RECORD_PATH(TEST_TMP_PATH + "/" + __func__);
