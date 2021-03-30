@@ -52,7 +52,12 @@ namespace protorecord
 		 * Opens a record for writing
 		 * 
 		 * @param[in] filepath
-		 * path to save record to
+		 * Path to save record to
+		 * 
+		 * @param[in] enable_timestamping
+		 * Set to true if you want to store a UTC timestamp for each
+		 * recorded sample. Storing timestamps will increase the
+		 * size of the index file.
 		 *
 		 * @return
 		 * True if the Writer was successfully initialized, false if the
@@ -60,7 +65,8 @@ namespace protorecord
 		 */
 		bool
 		open(
-			const std::string &filepath);
+			const std::string &filepath,
+			bool enable_timestamping = false);
 
 		/**
 		 * Write a protobuf message to the record

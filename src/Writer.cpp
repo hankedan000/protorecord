@@ -25,7 +25,7 @@ namespace protorecord
 		const std::string &filepath,
 		bool enable_timestamping)
 	 : initialized_(false)
-	 , timestamping_enabled_(enable_timestamping)
+	 , timestamping_enabled_()
 	 , index_summary_()
 	 , index_item_()
 	 , record_path_()
@@ -35,7 +35,7 @@ namespace protorecord
 	 , flags_(protorecord::Flags::VALID)
 	{
 		buffer_.resize(64000);
-		open(filepath);
+		open(filepath,enable_timestamping);
 	}
 
 	/**
@@ -52,7 +52,8 @@ namespace protorecord
 
 	bool
 	Writer::open(
-		const std::string &filepath)
+		const std::string &filepath,
+		bool enable_timestamping)
 	{
 		if (initialized_)
 		{
@@ -63,11 +64,13 @@ namespace protorecord
 
 		if (filepath != "")
 		{
-			if (init_record(filepath,true))
-			{
-				initialized_ = true;
-				record_path_ = filepath;
-			}
+			// reset member variables
+			timestamping_enabled_ = enable_timestamping;
+			record_path_ = filepath;
+			total_item_count_ = 0;
+			flags_ = protorecord::Flags::VALID;
+
+			initialized_ = init_record(filepath,true);
 		}
 
 		return initialized_;
