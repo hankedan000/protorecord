@@ -33,6 +33,7 @@ namespace protorecord
 	 , data_file_()
 	 , total_item_count_(0)
 	 , flags_(protorecord::Flags::VALID)
+	 , fail_reason_("")
 	{
 		buffer_.resize(64000);
 		open(filepath,enable_timestamping);
@@ -55,10 +56,12 @@ namespace protorecord
 		const std::string &filepath,
 		bool enable_timestamping)
 	{
+		fail_reason_ = "";
+
 		if (initialized_)
 		{
 			// don't reinitialize file
-			std::cerr << "Writer already intialized!" << std::endl;
+			fail_reason_ = "Writer already intialized";
 			return false;
 		}
 
@@ -82,6 +85,7 @@ namespace protorecord
 		uint32_t msg_data_size)
 	{
 		bool okay = initialized_;
+		fail_reason_ = "";
 
 		if (timestamping_enabled_)
 		{
@@ -100,8 +104,9 @@ namespace protorecord
 	}
 
 	size_t
-	Writer::size() const
+	Writer::size()
 	{
+		fail_reason_ = "";
 		return total_item_count_;
 	}
 
@@ -109,6 +114,8 @@ namespace protorecord
 	Writer::close(
 		bool store_readme)
 	{
+		fail_reason_ = "";
+
 		if (initialized_)
 		{
 			store_summary(PROTORECORD_VERSION_SIZE,true);
@@ -139,6 +146,12 @@ namespace protorecord
 		initialized_ = false;
 	}
 
+	std::string
+	Writer::reason()
+	{
+		return std::move(fail_reason_);
+	}
+
 	//-------------------------------------------------------------------------
 	// protected methods
 	//-------------------------------------------------------------------------
@@ -157,9 +170,9 @@ namespace protorecord
 		}
 		else if (status < 0)
 		{
-			std::cerr << __func__ << " - failed to create record. " <<
-				"error: " << strerror(errno) << "; "
-				"filepath: '" << filepath << "'" << std::endl;
+			fail_reason_ = std::string(" - failed to create record. ") +
+				"error: " + strerror(errno) + "; " +
+				"filepath: '" + filepath + "'";
 			okay = false;
 		}
 
@@ -171,8 +184,7 @@ namespace protorecord
 			index_file_.open(INDEX_FILEPATH,INDEX_FLAGS);
 			if ( ! index_file_.good())
 			{
-				std::cerr << "failed to create"
-					" index file '" << INDEX_FILEPATH << "'" << std::endl;
+				fail_reason_ = "failed to create index file: " + INDEX_FILEPATH;
 				okay = false;
 			}
 		}
@@ -185,8 +197,7 @@ namespace protorecord
 			data_file_.open(DATA_FILEPATH,DATA_FLAGS);
 			if ( ! data_file_.good())
 			{
-				std::cerr << "failed to create"
-					" data file '" << DATA_FILEPATH << "'" << std::endl;
+				fail_reason_ = "failed to create data file: " + DATA_FILEPATH;
 				okay = false;
 			}
 		}
@@ -265,9 +276,9 @@ namespace protorecord
 		const void *item_data,
 		uint32_t item_data_size)
 	{
-		bool okay = initialized_;
+		bool okay = true;
 
-		if (okay)
+		if (initialized_)
 		{
 			/**
 			 * When timestamping is enabled, it should be set by the caller.
@@ -282,13 +293,22 @@ namespace protorecord
 
 			// update index file
 			memset((void*)buffer_.data(),0,index_summary_.index_item_size());
-			okay = okay && index_item_.SerializeToArray((void*)buffer_.data(),buffer_.size());
-			if (okay)
+			if (index_item_.SerializeToArray((void*)buffer_.data(),buffer_.size()))
 			{
 				index_file_.write(buffer_.data(),index_summary_.index_item_size());
 				// increment item count
 				total_item_count_++;
 			}
+			else
+			{
+				fail_reason_ = "**internal error** failed to serialize index_item_";
+				okay = false;
+			}
+		}
+		else
+		{
+			fail_reason_ = "Writer not initialized";
+			okay = false;
 		}
 
 		return okay;

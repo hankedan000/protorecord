@@ -111,7 +111,7 @@ namespace protorecord
 		 * The number of items that have been written thus far
 		 */
 		size_t
-		size() const;
+		size();
 
 		/**
 		 * Stores the finalized index to disk and closes all opened
@@ -124,6 +124,17 @@ namespace protorecord
 		void
 		close(
 			bool store_readme = true);
+
+		/**
+		 * @return
+		 * A string explaining the failure reason for a previously called
+		 * method in this class. An empty string is returned if the previous
+		 * method was successful. This method will also return an empty
+		 * string upon subsequent calls, in affect "popping" the failure
+		 * reason from the class.
+		 */
+		std::string
+		reason();
 
 	protected:
 		/**
@@ -216,6 +227,9 @@ namespace protorecord
 		// bitmask of protorecord::Flags::*
 		uint32_t flags_;
 
+		// set to 
+		std::string fail_reason_;
+
 	};
 
 	template<class PROTOBUF_T>
@@ -223,9 +237,10 @@ namespace protorecord
 	Writer::write(
 		const PROTOBUF_T &pb)
 	{
-		bool okay = initialized_;
+		bool okay = true;
+		fail_reason_ = "";
 
-		if (okay)
+		if (initialized_)
 		{
 			if (timestamping_enabled_)
 			{
@@ -235,20 +250,32 @@ namespace protorecord
 
 			try
 			{
-				okay = okay && pb.SerializeToArray((void*)buffer_.data(),buffer_.size());
-				okay = okay && write_item_data(buffer_.data(),pb.ByteSizeLong());
+				if (pb.SerializeToArray((void*)buffer_.data(),buffer_.size()))
+				{
+					okay = okay && write_item_data(buffer_.data(),pb.ByteSizeLong());
+				}
+				else
+				{
+					fail_reason_ = "failed to serialize protobuf msg";
+					okay = false;
+				}
 			}
 			catch (const std::exception &ex)
 			{
-				std::cerr << __func__ << " - caught std::exception " << std::endl;
-				std::cerr << "what: " << ex.what() << std::endl;
+				fail_reason_ = "caught std::exception. what: ";
+				fail_reason_ += ex.what();
 				okay = false;
 			}
 			catch (...)
 			{
-				std::cerr << __func__ << " - caught unknown exception " << std::endl;
+				fail_reason_ = "caught unknown exception ";
 				okay = false;
 			}
+		}
+		else
+		{
+			fail_reason_ = "Writer not initialized";
+			okay = false;
 		}
 
 		return okay;
