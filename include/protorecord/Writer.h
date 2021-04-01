@@ -221,8 +221,11 @@ namespace protorecord
 		// the total number of recorded samples thus far
 		uint64_t total_item_count_;
 
-		// the time when the recording was created
-		std::chrono::microseconds start_time_;
+		// the system clock time when the recording was opened
+		std::chrono::microseconds start_time_system_;
+
+		// the monotonic clock time when the recording was opened
+		std::chrono::microseconds start_time_mono_;
 
 		// bitmask of protorecord::Flags::*
 		uint32_t flags_;
@@ -244,8 +247,7 @@ namespace protorecord
 		{
 			if (timestamping_enabled_)
 			{
-				// TODO should probably be using a monotonic clock source here
-				index_item_.set_timestamp((get_time_now() - start_time_).count());
+				index_item_.set_timestamp((get_mono_time() - start_time_mono_).count());
 			}
 
 			try

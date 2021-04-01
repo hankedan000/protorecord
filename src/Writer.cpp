@@ -89,8 +89,7 @@ namespace protorecord
 
 		if (timestamping_enabled_)
 		{
-			// TODO should probably be using a monotonic clock source here
-			index_item_.set_timestamp((get_time_now() - start_time_).count());
+			index_item_.set_timestamp((get_mono_time() - start_time_mono_).count());
 		}
 
 		okay = okay && write_item_data(msg_data,msg_data_size);
@@ -203,9 +202,8 @@ namespace protorecord
 		}
 
 		// intialize index item
+		index_item_.Clear();
 		uint32_t item_size = PROTORECORD_INDEX_ITEM_SIZE_NO_TIMESTAMP;
-		index_item_.set_offset(0);
-		index_item_.set_size(0);
 		if (timestamping_enabled_)
 		{
 			item_size = PROTORECORD_INDEX_ITEM_SIZE_TIMESTAMP;
@@ -213,12 +211,13 @@ namespace protorecord
 			flags_ |= protorecord::Flags::HAS_TIMESTAMPS;
 		}
 
-		start_time_ = get_time_now();
+		start_time_system_ = get_system_time();
+		start_time_mono_ = get_mono_time();
 
 		// initialize index summary
 		index_summary_.set_total_items(total_item_count_);
 		index_summary_.set_index_item_size(item_size);
-		index_summary_.set_start_time_utc(start_time_.count());
+		index_summary_.set_start_time_utc(start_time_system_.count());
 		index_summary_.set_flags(flags_);
 
 		if (okay)

@@ -74,14 +74,26 @@ namespace protorecord
 
 	/**
 	 * @return
-	 * the systemtime in microseconds
+	 * the system clock time in microseconds
 	 */
 	inline
 	std::chrono::microseconds
-	get_time_now()
+	get_system_time()
 	{
 		return std::chrono::duration_cast<std::chrono::microseconds>(
 			std::chrono::system_clock::now().time_since_epoch());
+	}
+
+	/**
+	 * @return
+	 * the monotonic clock time in microseconds
+	 */
+	inline
+	std::chrono::microseconds
+	get_mono_time()
+	{
+		return std::chrono::duration_cast<std::chrono::microseconds>(
+			std::chrono::steady_clock::now().time_since_epoch());
 	}
 
 }// protorecord
