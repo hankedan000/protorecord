@@ -1,11 +1,11 @@
 #pragma once
 
 #include <chrono>
+#include <cmath>
 #include <string>
 #include <fstream>
 #include <vector>
 
-#include "ProtorecordIndex.pb.h"
 #include "protorecord/Constants.h"
 #include "protorecord/Utils.h"
 
@@ -205,8 +205,8 @@ namespace protorecord
 		// this must be specified at constructor time
 		bool timestamping_enabled_;
 
-		// the live summary
-		protorecord::IndexSummary index_summary_;
+		// the size of an index item in bytes
+		uint32_t item_size_;
 
 		// the records filepath
 		std::string record_path_;
@@ -253,27 +253,21 @@ namespace protorecord
 				timestamp = get_mono_time() - start_time_mono_;
 			}
 
-			try
+			uint32_t obj_size = pb.ByteSizeLong();
+			if (buffer_.size() < obj_size)
 			{
-				if (pb.SerializeToArray((void*)buffer_.data(),buffer_.size()))
-				{
-					okay = okay && write_item_data(buffer_.data(),pb.ByteSizeLong(),timestamp);
-				}
-				else
-				{
-					fail_reason_ = "failed to serialize protobuf msg";
-					okay = false;
-				}
+				// for internal class needs, we need the buffer at least as an IndexItem
+				// so that we can serialize items for the index file
+				buffer_.resize(std::max(item_size_,obj_size*2));
 			}
-			catch (const std::exception &ex)
+
+			if (pb.SerializeToArray((void*)buffer_.data(),buffer_.size()))
 			{
-				fail_reason_ = "caught std::exception. what: ";
-				fail_reason_ += ex.what();
-				okay = false;
+				okay = okay && write_item_data(buffer_.data(),obj_size,timestamp);
 			}
-			catch (...)
+			else
 			{
-				fail_reason_ = "caught unknown exception ";
+				fail_reason_ = "failed to serialize protobuf msg";
 				okay = false;
 			}
 		}

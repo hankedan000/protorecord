@@ -1,6 +1,5 @@
-#include "protorecord/Utils.h"
 #include "protorecord/Writer.h"
-#include <iostream>
+#include "ProtorecordIndex.pb.h"
 // TODO support non-unix systems
 #include <sys/stat.h>
 
@@ -26,7 +25,7 @@ namespace protorecord
 		bool enable_timestamping)
 	 : initialized_(false)
 	 , timestamping_enabled_()
-	 , index_summary_()
+	 , item_size_(0)
 	 , record_path_()
 	 , index_file_()
 	 , data_file_()
@@ -131,12 +130,12 @@ namespace protorecord
 					readme << "**THIS FILE IS AUTO GENERATED AND IT'S FORMAT SHOULD NOT BE ASSUMED**" << std::endl;
 					readme << "This directory was created with the [protorecord](" << REPO_URL << ") library." << std::endl;
 					readme << "protorecord version: " << version_to_string(this_version()) << std::endl;
-					time_t rawtime = index_summary_.start_time_utc() / 1000000.0;
+					time_t rawtime = start_time_system_.count() / 1000000.0;
 					struct tm *timeinfo = localtime(&rawtime);
 					char buffer[1024];
 					strftime(buffer,sizeof(buffer),"%A %B %d, %G %r",timeinfo);
 					readme << "Creation Time: " << buffer << std::endl;
-					readme << "Items: " << index_summary_.total_items() << std::endl;
+					readme << "Items: " << total_item_count_ << std::endl;
 
 					readme.close();
 				}
@@ -201,21 +200,15 @@ namespace protorecord
 			}
 		}
 
-		uint32_t item_size = PROTORECORD_INDEX_ITEM_SIZE_NO_TIMESTAMP;
+		item_size_ = PROTORECORD_INDEX_ITEM_SIZE_NO_TIMESTAMP;
 		if (timestamping_enabled_)
 		{
-			item_size = PROTORECORD_INDEX_ITEM_SIZE_TIMESTAMP;
+			item_size_ = PROTORECORD_INDEX_ITEM_SIZE_TIMESTAMP;
 			flags_ |= protorecord::Flags::HAS_TIMESTAMPS;
 		}
 
 		start_time_system_ = get_system_time();
 		start_time_mono_ = get_mono_time();
-
-		// initialize index summary
-		index_summary_.set_total_items(total_item_count_);
-		index_summary_.set_index_item_size(item_size);
-		index_summary_.set_start_time_utc(start_time_system_.count());
-		index_summary_.set_flags(flags_);
 
 		if (okay)
 		{
@@ -248,13 +241,16 @@ namespace protorecord
 			auto prev_pos = index_file_.tellp();
 			index_file_.seekp(pos);
 
-			// update fields based on member variables
-			index_summary_.set_total_items(total_item_count_);
-			index_summary_.set_flags(flags_);
+			// create index summary based on member variables
+			static protorecord::IndexSummary summary;
+			summary.set_total_items(total_item_count_);
+			summary.set_index_item_size(item_size_);
+			summary.set_start_time_utc(start_time_system_.count());
+			summary.set_flags(flags_);
 
 			// save latest index summary
 			memset((void*)buffer_.data(),0,PROTORECORD_INDEX_SUMMARY_SIZE);
-			okay = okay && index_summary_.SerializeToArray((void*)buffer_.data(),buffer_.size());
+			okay = okay && summary.SerializeToArray((void*)buffer_.data(),buffer_.size());
 			index_file_.write(buffer_.data(),PROTORECORD_INDEX_SUMMARY_SIZE);
 
 			if (restore_pos)
@@ -289,10 +285,10 @@ namespace protorecord
 			data_file_.write((const char *)item_data,item_data_size);
 
 			// update index file
-			memset((void*)buffer_.data(),0,index_summary_.index_item_size());
+			memset((void*)buffer_.data(),0,item_size_);
 			if (index_item.SerializeToArray((void*)buffer_.data(),buffer_.size()))
 			{
-				index_file_.write(buffer_.data(),index_summary_.index_item_size());
+				index_file_.write(buffer_.data(),item_size_);
 				// increment item count
 				total_item_count_++;
 			}
