@@ -27,7 +27,6 @@ namespace protorecord
 	 : initialized_(false)
 	 , timestamping_enabled_()
 	 , index_summary_()
-	 , index_item_()
 	 , record_path_()
 	 , index_file_()
 	 , data_file_()
@@ -87,12 +86,13 @@ namespace protorecord
 		bool okay = initialized_;
 		fail_reason_ = "";
 
+		std::chrono::microseconds timestamp;
 		if (timestamping_enabled_)
 		{
-			index_item_.set_timestamp((get_mono_time() - start_time_mono_).count());
+			timestamp = get_mono_time() - start_time_mono_;
 		}
 
-		okay = okay && write_item_data(msg_data,msg_data_size);
+		okay = okay && write_item_data(msg_data,msg_data_size,timestamp);
 
 		if (okay)
 		{
@@ -201,13 +201,10 @@ namespace protorecord
 			}
 		}
 
-		// intialize index item
-		index_item_.Clear();
 		uint32_t item_size = PROTORECORD_INDEX_ITEM_SIZE_NO_TIMESTAMP;
 		if (timestamping_enabled_)
 		{
 			item_size = PROTORECORD_INDEX_ITEM_SIZE_TIMESTAMP;
-			index_item_.set_timestamp(0);
 			flags_ |= protorecord::Flags::HAS_TIMESTAMPS;
 		}
 
@@ -273,26 +270,27 @@ namespace protorecord
 	bool
 	Writer::write_item_data(
 		const void *item_data,
-		uint32_t item_data_size)
+		uint32_t item_data_size,
+		const std::chrono::microseconds &timestamp)
 	{
 		bool okay = true;
 
 		if (initialized_)
 		{
-			/**
-			 * When timestamping is enabled, it should be set by the caller.
-			 * This is done to achieve a more accurate timestamping closer to
-			 * where the user made the public write_*() call; otherwise, the
-			 * stored timestamp could encapsulate serialization time overhead.
-			 */
-			index_item_.set_offset(data_file_.tellp());
-			index_item_.set_size(item_data_size);
+			// build an index item for this entry
+			static protorecord::IndexItem index_item;
+			index_item.set_offset(data_file_.tellp());
+			index_item.set_size(item_data_size);
+			if (timestamping_enabled_)
+			{
+				index_item.set_timestamp(timestamp.count());
+			}
 
 			data_file_.write((const char *)item_data,item_data_size);
 
 			// update index file
 			memset((void*)buffer_.data(),0,index_summary_.index_item_size());
-			if (index_item_.SerializeToArray((void*)buffer_.data(),buffer_.size()))
+			if (index_item.SerializeToArray((void*)buffer_.data(),buffer_.size()))
 			{
 				index_file_.write(buffer_.data(),index_summary_.index_item_size());
 				// increment item count

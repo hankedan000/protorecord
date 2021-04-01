@@ -183,6 +183,10 @@ namespace protorecord
 		 * @param[in] item_data_size
 		 * The size of the item_data block in bytes
 		 *
+		 * @param[in] timestamp
+		 * The timestamp of the item. If timestamping is disabled for this writer
+		 * instance, then this argument is ignored.
+		 *
 		 * @return
 		 * True if the item was written successfully, if so the class's
 		 * total_item_count_ is incremented.
@@ -190,7 +194,8 @@ namespace protorecord
 		bool
 		write_item_data(
 			const void *item_data,
-			uint32_t item_data_size);
+			uint32_t item_data_size,
+			const std::chrono::microseconds &timestamp);
 
 	private:
 		// set to true if the writer was initialized succesfully
@@ -202,9 +207,6 @@ namespace protorecord
 
 		// the live summary
 		protorecord::IndexSummary index_summary_;
-
-		// the current index item
-		protorecord::IndexItem index_item_;
 
 		// the records filepath
 		std::string record_path_;
@@ -245,16 +247,17 @@ namespace protorecord
 
 		if (initialized_)
 		{
+			std::chrono::microseconds timestamp;
 			if (timestamping_enabled_)
 			{
-				index_item_.set_timestamp((get_mono_time() - start_time_mono_).count());
+				timestamp = get_mono_time() - start_time_mono_;
 			}
 
 			try
 			{
 				if (pb.SerializeToArray((void*)buffer_.data(),buffer_.size()))
 				{
-					okay = okay && write_item_data(buffer_.data(),pb.ByteSizeLong());
+					okay = okay && write_item_data(buffer_.data(),pb.ByteSizeLong(),timestamp);
 				}
 				else
 				{
