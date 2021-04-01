@@ -17,6 +17,7 @@ namespace protorecord
 	 , data_file_()
 	 , next_item_num_(0)
 	 , failbit_(false)
+	 , fail_reason_("")
 	{
 		buffer_.resize(64000);
 		initialized_ = init_record(filepath);
@@ -32,8 +33,9 @@ namespace protorecord
 	//-------------------------------------------------------------------------
 
 	bool
-	Reader::has_next() const
+	Reader::has_next()
 	{
+		fail_reason_ = "";
 		return initialized_ &&
 			! failbit_ &&
 			next_item_num_ < index_summary_.total_items();
@@ -43,6 +45,7 @@ namespace protorecord
 	Reader::get_next_timestamp(
 		uint64_t &item_timestamp)
 	{
+		fail_reason_ = "";
 		bool okay = get_index_item(next_item_num_,index_item_);
 		if (okay && index_item_.has_timestamp())
 		{
@@ -52,8 +55,9 @@ namespace protorecord
 	}
 
 	size_t
-	Reader::size() const
+	Reader::size()
 	{
+		fail_reason_ = "";
 		if (initialized_)
 		{
 			return index_summary_.total_items();
@@ -62,38 +66,55 @@ namespace protorecord
 	}
 
 	uint32_t
-	Reader::flags() const
+	Reader::flags()
 	{
 		if (initialized_)
 		{
+			fail_reason_ = "";
 			return index_summary_.flags();
 		}
-		return 0;
+		else
+		{
+			fail_reason_ = "Reader not initialized";
+			return 0;
+		}
 	}
 
 	bool
-	Reader::has_assumed_data() const
+	Reader::has_assumed_data()
 	{
+		fail_reason_ = "";
 		return is_flag_set(protorecord::Flags::HAS_ASSUMED_DATA);
 	}
 
 	bool
-	Reader::has_timestamps() const
+	Reader::has_timestamps()
 	{
+		fail_reason_ = "";
 		return is_flag_set(protorecord::Flags::HAS_TIMESTAMPS);
 	}
 
 	bool
 	Reader::get_start_time(
-		uint64_t &start_time_us) const
+		uint64_t &start_time_us)
 	{
+		fail_reason_ = "";
+		if ( ! initialized_)
+		{
+			fail_reason_ = "Reader not initialized";
+		}
 		start_time_us = index_summary_.start_time_utc();
 		return initialized_;
 	}
 
 	protorecord::Version
-	Reader::get_version() const
+	Reader::get_version()
 	{
+		fail_reason_ = "";
+		if ( ! initialized_)
+		{
+			fail_reason_ = "Reader not initialized";
+		}
 		return version_;
 	}
 
@@ -105,6 +126,7 @@ namespace protorecord
 	Reader::init_record(
 			const std::string &filepath)
 	{
+		fail_reason_ = "";
 		bool okay = true;
 
 		// open the index file
@@ -115,8 +137,7 @@ namespace protorecord
 			index_file_.open(INDEX_FILEPATH,INDEX_FLAGS);
 			if ( ! index_file_.good())
 			{
-				std::cerr << "failed to open"
-					" index file '" << INDEX_FILEPATH << "'" << std::endl;
+				fail_reason_ = "failed to open index file '" + INDEX_FILEPATH + "'";
 				okay = false;
 			}
 		}
@@ -129,8 +150,7 @@ namespace protorecord
 			data_file_.open(DATA_FILEPATH,DATA_FLAGS);
 			if ( ! data_file_.good())
 			{
-				std::cerr << "failed to open"
-					" data file '" << DATA_FILEPATH << "'" << std::endl;
+				fail_reason_ = "failed to open data file '" + DATA_FILEPATH + "'";
 				okay = false;
 			}
 		}
@@ -164,17 +184,13 @@ namespace protorecord
 					// check for compatibility
 					if ( ! is_compatible(version_))
 					{
-						std::cerr << __func__ << " - " <<
-							"detected version incompatibility!\n" <<
-							" record version: " << version_.DebugString() << "; \n"
-							" library version: " << get_version().DebugString() << "; \n";
+						fail_reason_ = "file/library version incompatibility";
 						okay = false;
 					}
 				}
 				else
 				{
-					std::cerr << __func__ << " - " <<
-						"index file too small to parse version!" << std::endl;
+					fail_reason_ = "index file too small to parse version";
 					okay = false;
 				}
 			}
@@ -191,23 +207,20 @@ namespace protorecord
 				}
 				else
 				{
-					std::cerr << __func__ << " - " <<
-						"index file too small to parse IndexSummary!" << std::endl;
+					fail_reason_ = "index file too small to parse IndexSummary";
 					okay = false;
 				}
 			}
 		}
 		catch (const std::exception &ex)
 		{
-			std::cerr << __func__ << " - " <<
-				"caught std::exception" << std::endl;
-			std::cerr << "what: " << ex.what();
+			fail_reason_ = "caught std::exception. what: ";
+			fail_reason_ += ex.what();
 			okay = false;
 		}
 		catch (...)
 		{
-			std::cerr << __func__ << " - " <<
-				"caught unknown exception" << std::endl;
+			fail_reason_ = "caught unknown exception";
 			okay = false;
 		}
 
@@ -223,7 +236,7 @@ namespace protorecord
 
 	bool
 	Reader::is_compatible(
-		const Version &record_version) const
+		const Version &record_version)
 	{
 		// only one version right now
 		return true;
@@ -234,6 +247,7 @@ namespace protorecord
 		uint64_t item_idx,
 		protorecord::IndexItem &item_out)
 	{
+		fail_reason_ = "";
 		bool okay = initialized_ && item_idx < this->size();
 
 		if (okay)
@@ -248,8 +262,7 @@ namespace protorecord
 			index_file_.read(buffer_.data(),index_summary_.index_item_size());
 			if (index_file_.eof())
 			{
-				std::cerr << __func__ << " - " <<
-					"reached end of index file!" << std::endl;
+				fail_reason_ = "reached end of index file";
 				okay = false;
 			}
 			else
@@ -260,13 +273,13 @@ namespace protorecord
 				}
 				catch (const std::exception &ex)
 				{
-					std::cerr << __func__ << " - caught std::exception " << std::endl;
-					std::cerr << "what: " << ex.what() << std::endl;
+					fail_reason_ = "caught std::exception. what: ";
+					fail_reason_ += ex.what();
 					okay = false;
 				}
 				catch (...)
 				{
-					std::cerr << __func__ << " - caught unknown exception " << std::endl;
+					fail_reason_ = "caught unknown exception";
 					okay = false;
 				}
 			}
@@ -277,7 +290,7 @@ namespace protorecord
 
 	bool
 	Reader::is_flag_set(
-		uint32_t flag) const
+		uint32_t flag)
 	{
 		auto flags = this->flags();
 		bool is_set = true;

@@ -32,7 +32,7 @@ namespace protorecord
 		 * from the record.
 		 */
 		bool
-		has_next() const;
+		has_next();
 
 		/**
 		 * Reads the next protobuf message from the record, but does not
@@ -83,28 +83,28 @@ namespace protorecord
 		 * The number of items that can be read from the record
 		 */
 		size_t
-		size() const;
+		size();
 
 		/**
 		 * @return
 		 * The record's bit mask of protorecord::Flags::* constants.
 		 */
 		uint32_t
-		flags() const;
+		flags();
 
 		/**
 		 * @return
 		 * True if the record's HAS_ASSUMED_DATA flag is set, false otherwise.
 		 */
 		bool
-		has_assumed_data() const;
+		has_assumed_data();
 
 		/**
 		 * @return
 		 * True if the record contains timestamped items, false otherwise.
 		 */
 		bool
-		has_timestamps() const;
+		has_timestamps();
 
 		/**
 		 * @param[out] start_time_us
@@ -116,7 +116,7 @@ namespace protorecord
 		 */
 		bool
 		get_start_time(
-			uint64_t &start_time_us) const;
+			uint64_t &start_time_us);
 
 		/**
 		 * @return
@@ -125,7 +125,18 @@ namespace protorecord
 		 * version 0.0.0 if Reader was not initialized properly.
 		 */
 		protorecord::Version
-		get_version() const;
+		get_version();
+
+		/**
+		 * @return
+		 * A string explaining the failure reason for a previously called
+		 * method in this class. An empty string is returned if the previous
+		 * method was successful. This method will also return an empty
+		 * string upon subsequent calls, in affect "popping" the failure
+		 * reason from the class.
+		 */
+		std::string
+		reason();
 
 	protected:
 		/**
@@ -157,7 +168,7 @@ namespace protorecord
 		 */
 		bool
 		is_compatible(
-			const Version &record_version) const;
+			const Version &record_version);
 
 		/**
 		 * Parse the next index item from the index_file_ and places the
@@ -186,7 +197,7 @@ namespace protorecord
 		 */
 		bool
 		is_flag_set(
-			uint32_t flag) const;
+			uint32_t flag);
 
 	private:
 		// set to true if the writer was initialized succesfully
@@ -215,6 +226,9 @@ namespace protorecord
 
 		// set to true if any internal failure occurs
 		bool failbit_;
+
+		// set to a human reasble string explaing previous method's failure
+		std::string fail_reason_;
 
 	};
 

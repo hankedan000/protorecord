@@ -227,7 +227,7 @@ namespace protorecord
 		// bitmask of protorecord::Flags::*
 		uint32_t flags_;
 
-		// set to 
+		// set to a human reasble string explaing previous method's failure
 		std::string fail_reason_;
 
 	};
