@@ -238,6 +238,7 @@ namespace protorecord
 		PROTOBUF_T &pb)
 	{
 		bool okay = initialized_;
+		fail_reason_ = "";
 
 		okay = okay && has_next();
 		okay = okay && get_index_item(next_item_num_,index_item_);
@@ -255,29 +256,15 @@ namespace protorecord
 			data_file_.read(buffer_.data(),index_item_.size());
 			if (data_file_.eof())
 			{
-				std::cerr << __func__ << " - " <<
-					"reached end of data file!" << std::endl;
+				fail_reason_ = "reached end of data file";
 				okay = false;
 			}
 		}
 
-		if (okay)
+		if (okay && ! pb.ParseFromArray((void*)buffer_.data(),index_item_.size()))
 		{
-			try
-			{
-				pb.ParseFromArray((void*)buffer_.data(),buffer_.size());
-			}
-			catch (const std::exception &ex)
-			{
-				std::cerr << __func__ << " - caught std::exception " << std::endl;
-				std::cerr << "what: " << ex.what() << std::endl;
-				okay = false;
-			}
-			catch (...)
-			{
-				std::cerr << __func__ << " - caught unknown exception " << std::endl;
-				okay = false;
-			}
+			fail_reason_ = "protobuf parse failed";
+			okay = false;
 		}
 
 		if ( ! okay)

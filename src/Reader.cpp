@@ -1,6 +1,5 @@
 #include "protorecord/Utils.h"
 #include "protorecord/Reader.h"
-#include <iostream>
 
 namespace protorecord
 {
