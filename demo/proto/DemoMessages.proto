@@ -6,3 +6,9 @@ message BasicMessage {
 	required string myString = 1;
 	required uint32 myInt = 2;
 }
+
+message LargeMessage {
+	repeated string myStrings = 1;
+	repeated uint32 myInts = 2;
+	repeated bool myBools = 3;
+}

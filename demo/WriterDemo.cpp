@@ -1,5 +1,5 @@
 #include "protorecord.h"
-#include "BasicMessage.pb.h"
+#include "DemoMessages.pb.h"
 
 using namespace protorecord;
 

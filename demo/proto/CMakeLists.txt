@@ -1,1 +1,1 @@
-create_protobuf_target(BasicMessage.proto)
+create_protobuf_target(DemoMessages.proto)

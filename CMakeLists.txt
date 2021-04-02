@@ -53,6 +53,7 @@ include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/include")
 
 add_subdirectory(include)
+add_subdirectory(extern)
 add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(demo)
