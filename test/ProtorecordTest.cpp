@@ -2,7 +2,7 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
-#include "BasicMessage.pb.h"
+#include "DemoMessages.pb.h"
 #include "protorecord.h"
 
 namespace protorecord

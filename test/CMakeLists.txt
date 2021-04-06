@@ -5,6 +5,6 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING AND CPPUNIT_FOUND
 	target_link_libraries(
 		ProtorecordTest
 			protorecord
-			BasicMessage_pb
+			DemoMessages_pb
 			${CPPUNIT_LIBRARIES})
 endif()
