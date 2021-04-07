@@ -18,8 +18,8 @@ list(APPEND CMAKE_MODULE_PATH "${PROTORECORD_MODULE_PATH}")
 # Adds come custome CMake macros
 include("${CMAKE_SOURCE_DIR}/cmake/macros/ProtobufMacros.cmake")
 
-# use cppunit for testing
-find_package(cppunit)
+find_package(cppunit)# use cppunit for testing
+find_package (Python COMPONENTS Interpreter)
 
 # if Google Protobuf is installed, include it's headers
 find_package(Protobuf REQUIRED)
