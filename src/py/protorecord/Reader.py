@@ -1,6 +1,6 @@
 import os
-import ProtorecordIndex_pb2
-import ProtorecordTypes_pb2
+import protorecord.ProtorecordIndex_pb2 as PrIndex
+import protorecord.ProtorecordTypes_pb2 as PrTypes
 
 # size in bytes of the Version message
 PROTORECORD_VERSION_SIZE = 24
@@ -36,13 +36,13 @@ class Reader():
 		self.initialized_ = False
 
 		# the parsed library version from the record
-		self.version_ = ProtorecordTypes_pb2.Version()
+		self.version_ = PrTypes.Version()
 
 		# the parsed IndexSummary
-		self.index_summary_ = ProtorecordIndex_pb2.IndexSummary()
+		self.index_summary_ = PrIndex.IndexSummary()
 
 		# the current parsed index item
-		self.index_item_ = ProtorecordIndex_pb2.IndexItem()
+		self.index_item_ = PrIndex.IndexItem()
 
 		# the opened index file
 		self.index_file_ = None
