@@ -5,6 +5,7 @@
  */
 package protorecord;
 
+import com.google.protobuf.Parser;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -19,7 +20,7 @@ import protorecord.ProtorecordTypes.Version;
  *
  * @author daniel
  */
-public class Reader {
+public class Reader<MSG_T extends com.google.protobuf.Message> {
     // set to true if the writer was initialized succesfully
     private boolean initialized_;
 
@@ -58,13 +59,15 @@ public class Reader {
     // set to a human reasble string explaing previous method's failure
     private String fail_reason_;
     
+    private final Parser<MSG_T> parser_;
+    
     /**
      * Constructor
      *
      * @param[in] filepath
      * The absolute or relative filepath to the record.
      */
-    public Reader(String filepath)
+    public Reader(String filepath, Parser<MSG_T> parser)
     {
         index_summary_ = IndexSummary.getDefaultInstance();
         index_file_ = null;
@@ -72,6 +75,7 @@ public class Reader {
         next_item_num_ = 0;
         failbit_ = false;
         fail_reason_ = "";
+        parser_ = parser;
         
         initialized_ = init_record(filepath);
     }
@@ -99,9 +103,37 @@ public class Reader {
      * @return
      * True if message was successfully read, false otherwise
      */
-//    boolean get_next(com.google.protobuf.Any pb)
-//    {
-//    }
+    public MSG_T get_next()
+    {
+        boolean okay = initialized_;
+        MSG_T out_msg = null;
+        fail_reason_ = "";
+
+        okay = okay && has_next();
+        IndexItem index_item = get_index_item(next_item_num_);
+        if (index_item == null) {
+            okay = false;
+        }
+
+        if (okay)
+        {
+            byte[] buffer = null;
+            try {
+                data_file_.read(buffer,(int)index_item.getOffset(),index_item.getSize());
+                out_msg = parser_.parseFrom(buffer);
+            } catch (IOException ex) {
+                fail_reason_ = "reached end of data file";
+                okay = false;
+            }
+        }
+
+        if ( ! okay)
+        {
+            failbit_ = true;
+        }
+
+        return out_msg;
+    }
  
     /**
      * Reads the next protobuf message from the record, and increments
@@ -113,10 +145,15 @@ public class Reader {
      * @return
      * True if message was successfully read, false otherwise
      */
-//    template<class PROTOBUF_T>
-//    bool
-//    take_next(
-//            PROTOBUF_T &pb);
+    MSG_T
+    take_next()
+    {
+        MSG_T out_msg = get_next();
+        if (out_msg != null) {
+            next_item_num_++;
+        }
+        return out_msg;
+    }
  
     /**
      * Reads the next item's timestamp
