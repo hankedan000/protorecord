@@ -58,6 +58,11 @@ add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(demo)
 
+# configure an environment script for python developement
+set(PROTORECORD_PROTO_PATH "${CMAKE_BINARY_DIR}/src/proto/")
+set(PROTORECORD_DEMO_PROTO_PATH "${CMAKE_BINARY_DIR}/demo/proto/")
+configure_file(python_env.sh.in python_env.sh)
+
 # install main header file
 install(FILES "${PROTORECORD_INCLUDE_DIR}/protorecord.h"
 	DESTINATION "include")
