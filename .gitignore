@@ -12,3 +12,8 @@ _deps
 
 # ignore build directory
 build/
+
+# ignore auto generated java source code
+src/java/protorecord/src/main/java/protorecord/ProtorecordTypes.java
+src/java/protorecord/src/main/java/protorecord/ProtorecordIndex.java
+/src/java/protorecord/target/
