@@ -1,4 +1,5 @@
 create_protobuf_target(Protorecord.proto)
+create_protobuf_target(DemoMessages.proto)
 
 install(
 	TARGETS

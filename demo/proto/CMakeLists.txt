@@ -1,1 +1,0 @@
-create_protobuf_target(DemoMessages.proto)

@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package protorecord;
+package protorecord.demo;
 
 message BasicMessage {
 	required string myString = 1;
