@@ -1,8 +1,13 @@
 syntax = "proto2";
 
-import "ProtorecordTypes.proto";
-
 package protorecord;
+
+// library version message
+message Version {
+	required uint32 major = 1;
+	required uint32 minor = 2;
+	required uint32 patch = 3;
+}
 
 // library version message
 message IndexItem {

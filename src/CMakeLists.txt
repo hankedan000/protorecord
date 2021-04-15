@@ -7,7 +7,7 @@ add_library(protorecord SHARED
 target_link_libraries(protorecord
 	PUBLIC
 		${Protobuf_LIBRARIES}
-		ProtorecordIndex_pb_static
+		Protorecord_pb_static
 )
 
 # build a list of public header file to install
