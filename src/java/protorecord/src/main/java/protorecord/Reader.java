@@ -48,7 +48,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
     private FileInputStream data_file_;
 
     // buffer used to deserialize data from files
-//    private std::vector<char> buffer_;
+    private byte[] buffer_;
 
     // the next item index the class will read from
     private long next_item_num_;
@@ -72,6 +72,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
         index_summary_ = IndexSummary.getDefaultInstance();
         index_file_ = null;
         data_file_ = null;
+        buffer_ = new byte[64000];
         next_item_num_ = 0;
         failbit_ = false;
         fail_reason_ = "";
@@ -117,10 +118,9 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
 
         if (okay)
         {
-            byte[] buffer = null;
             try {
-                data_file_.read(buffer,(int)index_item.getOffset(),index_item.getSize());
-                out_msg = parser_.parseFrom(buffer);
+                data_file_.read(buffer_,(int)index_item.getOffset(),index_item.getSize());
+                out_msg = parser_.parseFrom(buffer_);
             } catch (IOException ex) {
                 fail_reason_ = "reached end of data file";
                 okay = false;
@@ -338,8 +338,15 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
             // read library version from record
             if (okay)
             {
-                byte[] buffer = null;
-                index_file_.read(buffer,0,Constants.PROTORECORD_VERSION_SIZE);
+                Version ver = Version.newBuilder().setMajor(0).setMinor(1).setPatch(0).build();
+                System.out.printf("ver size = %d\n",ver.getSerializedSize());
+                System.out.println("Reading version...");
+                byte[] buffer = new byte[6];
+                index_file_.read(buffer,0,6);
+                for (int i=0; i<Constants.PROTORECORD_VERSION_SIZE; i++)
+                {
+                    System.out.printf("%02x\n",buffer_[i]);
+                }
                 Version version = Version.parseFrom(buffer);
                 version_major_ = version.getMajor();
                 version_minor_ = version.getMinor();
@@ -356,13 +363,13 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
             // read IndexSummary from record
             if (okay)
             {
-                byte[] buffer = null;
+                System.out.println("Reading summary...");
                 index_file_.read(
-                        buffer,
+                        buffer_,
                         Constants.PROTORECORD_VERSION_SIZE,
                         Constants.PROTORECORD_INDEX_SUMMARY_SIZE);
 
-                IndexSummary summary = IndexSummary.parseFrom(buffer);
+                IndexSummary summary = IndexSummary.parseFrom(buffer_);
                 index_summary_total_items_ = summary.getTotalItems();
                 index_summary_index_item_size_ = summary.getIndexItemSize();
                 index_summary_start_time_utc_ = summary.getStartTimeUtc();
@@ -429,10 +436,9 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
             pos += item_idx * index_summary_.getIndexItemSize();
 
             // seek to position and read
-            byte[] buffer = null;
             try {
-                index_file_.read(buffer,pos,index_summary_.getIndexItemSize());
-                item_out = IndexItem.parseFrom(buffer);
+                index_file_.read(buffer_,pos,index_summary_.getIndexItemSize());
+                item_out = IndexItem.parseFrom(buffer_);
             } catch (IOException ex) {
                 fail_reason_ = "reached end of index file";
                 okay = false;
