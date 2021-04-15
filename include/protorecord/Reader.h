@@ -4,7 +4,7 @@
 #include <fstream>
 #include <vector>
 
-#include "ProtorecordIndex.pb.h"
+#include "Protorecord.pb.h"
 #include "protorecord/Constants.h"
 
 namespace protorecord

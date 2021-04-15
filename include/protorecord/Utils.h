@@ -3,7 +3,7 @@
 #include <chrono>
 #include <sstream>
 
-#include "ProtorecordTypes.pb.h"
+#include "Protorecord.pb.h"
 #include "protorecord/version.h"
 
 namespace protorecord

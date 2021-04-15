@@ -4,6 +4,7 @@
 #include "DemoMessages.pb.h"
 
 using namespace protorecord;
+using namespace protorecord::demo;
 
 int main()
 {

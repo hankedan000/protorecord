@@ -40,7 +40,7 @@ namespace protorecord
 
 		Writer writer(RECORD_PATH);
 
-		BasicMessage msg;
+		protorecord::demo::BasicMessage msg;
 		msg.set_mystring("helloworld");
 
 		for (unsigned int i=0; i<NUM_ITEMS; i++)
@@ -79,7 +79,7 @@ namespace protorecord
 
 		Writer writer(RECORD_PATH);
 
-		BasicMessage msg;
+		protorecord::demo::BasicMessage msg;
 		msg.set_mystring("helloworld");
 
 		for (unsigned int i=0; i<NUM_ITEMS; i++)
@@ -119,7 +119,7 @@ namespace protorecord
 		Writer writer(RECORD_PATH);
 
 		uint8_t buffer[1024];
-		BasicMessage msg;
+		protorecord::demo::BasicMessage msg;
 		msg.set_mystring("helloworld");
 
 		for (unsigned int i=0; i<NUM_ITEMS; i++)
@@ -159,7 +159,7 @@ namespace protorecord
 
 		Writer writer1(RECORD_PATH);
 
-		BasicMessage msg;
+		protorecord::demo::BasicMessage msg;
 		msg.set_mystring("write1");
 
 		for (unsigned int i=0; i<NUM_ITEMS; i++)
@@ -218,7 +218,7 @@ namespace protorecord
 		// open the Writer after construction (ie "late")
 		CPPUNIT_ASSERT(writer.open(RECORD_PATH));
 
-		BasicMessage msg;
+		protorecord::demo::BasicMessage msg;
 		msg.set_mystring("helloworld");
 
 		for (unsigned int i=0; i<NUM_ITEMS; i++)
@@ -261,7 +261,7 @@ namespace protorecord
 		// open the writer for the first record
 		CPPUNIT_ASSERT(writer.open(RECORD1_PATH));
 
-		BasicMessage msg;
+		protorecord::demo::BasicMessage msg;
 		msg.set_mystring("this is record1");
 
 		for (unsigned int i=0; i<NUM_ITEMS; i++)
@@ -367,7 +367,7 @@ namespace protorecord
 
 		Writer writer(RECORD_PATH,true);// enable timestamping
 
-		BasicMessage msg;
+		protorecord::demo::BasicMessage msg;
 		msg.set_mystring("helloworld");
 
 		for (unsigned int i=0; i<NUM_ITEMS; i++)

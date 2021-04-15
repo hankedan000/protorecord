@@ -1,5 +1,5 @@
 #include "protorecord/Writer.h"
-#include "ProtorecordIndex.pb.h"
+#include "Protorecord.pb.h"
 // TODO support non-unix systems
 #include <sys/stat.h>
 
