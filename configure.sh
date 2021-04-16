@@ -7,6 +7,5 @@ for proto_file in $PROTO_SRC; do
 	echo "  $proto_file"
 	protoc -I=src/proto --java_out=src/java/protorecord/src/main/java $proto_file
 done
-protoc -I=demo/proto --java_out=src/java/protorecord/src/main/java DemoMessages.proto
 
 echo "Complete!"
