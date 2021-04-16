@@ -239,8 +239,11 @@ namespace protorecord
 	Reader::is_compatible(
 		const Version &record_version)
 	{
-		// only one version right now
-		return true;
+		bool okay = true;
+		okay = okay && record_version.major() == protorecord::major_version();
+		okay = okay && record_version.minor() == protorecord::minor_version();
+		okay = okay && record_version.patch() == protorecord::patch_version();
+		return okay;
 	}
 
 	bool
