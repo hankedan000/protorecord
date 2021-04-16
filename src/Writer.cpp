@@ -275,6 +275,7 @@ namespace protorecord
 		{
 			// build an index item for this entry
 			static protorecord::IndexItem index_item;
+			index_item.set_file(0);// TODO use more files
 			index_item.set_offset(data_file_.tellp());
 			index_item.set_size(item_data_size);
 			if (timestamping_enabled_)
