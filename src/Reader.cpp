@@ -165,7 +165,6 @@ namespace protorecord
 
 		// initialize index summary
 		index_summary_.set_total_items(0);
-		index_summary_.set_index_item_size(index_item_.ByteSizeLong());
 		index_summary_.set_start_time_utc(0);
 		index_summary_.set_flags(0);
 
@@ -174,11 +173,12 @@ namespace protorecord
 			// read library version from record
 			if (okay)
 			{
-				memset((void*)buffer_.data(),0,PROTORECORD_VERSION_SIZE);
-				index_file_.read(buffer_.data(),PROTORECORD_VERSION_SIZE);
+				uint8_t version_size = 0;
+				index_file_.read((char*)&version_size,1);// TODO check return
+				index_file_.read(buffer_.data(),version_size);
 				if ( ! index_file_.eof())
 				{
-					version_.ParseFromArray(buffer_.data(),buffer_.size());
+					version_.ParseFromArray(buffer_.data(),version_size);
 
 					// check for compatibility
 					if ( ! is_compatible(version_))
@@ -197,12 +197,14 @@ namespace protorecord
 			// read IndexSummary from record
 			if (okay)
 			{
-				memset((void*)buffer_.data(),0,PROTORECORD_INDEX_SUMMARY_SIZE);
-				index_file_.read(buffer_.data(),PROTORECORD_INDEX_SUMMARY_SIZE);
+				uint8_t summary_size = 0;
+				index_file_.seekg(SUMMARY_BLOCK_OFFSET);
+				index_file_.read((char*)&summary_size,1);// TODO check return
+				index_file_.read(buffer_.data(),summary_size);
 
 				if ( ! index_file_.eof())
 				{
-					index_summary_.ParseFromArray(buffer_.data(),buffer_.size());
+					index_summary_.ParseFromArray(buffer_.data(),summary_size);
 				}
 				else
 				{
@@ -252,13 +254,13 @@ namespace protorecord
 		if (okay)
 		{
 			// compute position to IndexItem in file
-			std::streampos pos = PROTORECORD_VERSION_SIZE + PROTORECORD_INDEX_SUMMARY_SIZE;
-			pos += item_idx * index_summary_.index_item_size();
+			std::streampos pos = ITEM_BLOCK_OFFSET + ITEM_BLOCK_STRIDE * item_idx;
 
 			// seek to position and read
+			uint8_t index_item_size = 0;
 			index_file_.seekg(pos);
-			memset((void*)buffer_.data(),0,index_summary_.index_item_size());
-			index_file_.read(buffer_.data(),index_summary_.index_item_size());
+			index_file_.read((char*)&index_item_size,1);// TODO check return
+			index_file_.read(buffer_.data(),index_item_size);
 			if (index_file_.eof())
 			{
 				fail_reason_ = "reached end of index file";
@@ -268,7 +270,7 @@ namespace protorecord
 			{
 				try
 				{
-					index_item_.ParseFromArray(buffer_.data(),buffer_.size());
+					index_item_.ParseFromArray(buffer_.data(),index_item_size);
 				}
 				catch (const std::exception &ex)
 				{
