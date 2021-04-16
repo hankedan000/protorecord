@@ -10,11 +10,12 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import protorecord.ProtorecordIndex.IndexItem;
-import protorecord.ProtorecordIndex.IndexSummary;
-import protorecord.ProtorecordTypes.Version;
+import protorecord.Protorecord.IndexItem;
+import protorecord.Protorecord.IndexSummary;
+import protorecord.Protorecord.Version;
 
 /**
  *
@@ -29,11 +30,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
     private int version_minor_;
     private int version_patch_;
 
-    // the parsed IndexSummary
-    private ProtorecordIndex.IndexSummaryOrBuilder index_summary_;
-    
     private long index_summary_total_items_;
-    private int index_summary_index_item_size_;
     private long index_summary_start_time_utc_;
     private int index_summary_flags_;
 
@@ -42,16 +39,16 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
     private int index_item_size_;
 
     // the opened index file
-    private FileInputStream index_file_;
+    private RandomAccessFile index_file_;
 
     // the opened data file
-    private FileInputStream data_file_;
+    private RandomAccessFile data_file_;
 
     // buffer used to deserialize data from files
     private byte[] buffer_;
 
     // the next item index the class will read from
-    private long next_item_num_;
+    private int next_item_num_;
 
     // set to true if any internal failure occurs
     private boolean failbit_;
@@ -69,7 +66,6 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
      */
     public Reader(String filepath, Parser<MSG_T> parser)
     {
-        index_summary_ = IndexSummary.getDefaultInstance();
         index_file_ = null;
         data_file_ = null;
         buffer_ = new byte[64000];
@@ -91,7 +87,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
         fail_reason_ = "";
         return initialized_ &&
                 ! failbit_ &&
-                next_item_num_ < index_summary_.getTotalItems();
+                next_item_num_ < index_summary_total_items_;
     }
  
     /**
@@ -119,8 +115,10 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
         if (okay)
         {
             try {
-                data_file_.read(buffer_,(int)index_item.getOffset(),index_item.getSize());
-                out_msg = parser_.parseFrom(buffer_);
+                byte[] msg_buffer = new byte[index_item.getSize()];
+                data_file_.seek(index_item.getOffset());
+                data_file_.read(msg_buffer,0,index_item.getSize());
+                out_msg = parser_.parseFrom(msg_buffer);
             } catch (IOException ex) {
                 fail_reason_ = "reached end of data file";
                 okay = false;
@@ -145,8 +143,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
      * @return
      * True if message was successfully read, false otherwise
      */
-    MSG_T
-    take_next()
+    public MSG_T take_next()
     {
         MSG_T out_msg = get_next();
         if (out_msg != null) {
@@ -182,7 +179,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
         fail_reason_ = "";
         if (initialized_)
         {
-            return index_summary_.getTotalItems();
+            return index_summary_total_items_;
         }
         return 0;
     }
@@ -196,7 +193,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
         if (initialized_)
         {
             fail_reason_ = "";
-            return index_summary_.getFlags();
+            return index_summary_flags_;
         }
         else
         {
@@ -242,7 +239,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
             // TODO raise an exception?
             return -1;
         }
-        return index_summary_.getStartTimeUtc();
+        return index_summary_start_time_utc_;
     }
  
     /**
@@ -251,14 +248,14 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
      * This can be used to determine version incompatibilities. Returns
      * version 0.0.0 if Reader was not initialized properly.
      */
-    public ProtorecordTypes.VersionOrBuilder get_version()
+    public Protorecord.Version get_version()
     {
         fail_reason_ = "";
         if ( ! initialized_)
         {
             fail_reason_ = "Reader not initialized";
         }
-        return ProtorecordTypes.Version.newBuilder()
+        return Protorecord.Version.newBuilder()
                 .setMajor(version_major_)
                 .setMinor(version_minor_)
                 .setPatch(version_patch_)
@@ -299,7 +296,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
         if (okay)
         {
             try {
-                index_file_ = new FileInputStream(INDEX_FILEPATH);
+                index_file_ = new RandomAccessFile(INDEX_FILEPATH,"r");
             } catch (FileNotFoundException ex) {
                 fail_reason_ = "failed to open index file '" + INDEX_FILEPATH + "'";
                 okay = false;
@@ -311,7 +308,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
         if (okay)
         {
             try {
-                data_file_ = new FileInputStream(DATA_FILEPATH);
+                data_file_ = new RandomAccessFile(DATA_FILEPATH,"r");
             } catch (FileNotFoundException ex) {
                 fail_reason_ = "failed to open data file '" + DATA_FILEPATH + "'";
                 okay = false;
@@ -329,7 +326,6 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
 
         // initialize index summary
         index_summary_total_items_ = 0;
-        index_summary_index_item_size_ = 12;// FIXME set for timestamped items
         index_summary_start_time_utc_ = 0;
         index_summary_flags_ = 0;
 
@@ -338,16 +334,10 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
             // read library version from record
             if (okay)
             {
-                Version ver = Version.newBuilder().setMajor(0).setMinor(1).setPatch(0).build();
-                System.out.printf("ver size = %d\n",ver.getSerializedSize());
-                System.out.println("Reading version...");
-                byte[] buffer = new byte[6];
-                index_file_.read(buffer,0,6);
-                for (int i=0; i<Constants.PROTORECORD_VERSION_SIZE; i++)
-                {
-                    System.out.printf("%02x\n",buffer_[i]);
-                }
-                Version version = Version.parseFrom(buffer);
+                int version_size = index_file_.read();
+                byte[] ver_buffer = new byte[version_size];
+                index_file_.read(ver_buffer,0,version_size);
+                Version version = Version.parseFrom(ver_buffer);
                 version_major_ = version.getMajor();
                 version_minor_ = version.getMinor();
                 version_patch_ = version.getPatch();
@@ -363,15 +353,13 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
             // read IndexSummary from record
             if (okay)
             {
-                System.out.println("Reading summary...");
-                index_file_.read(
-                        buffer_,
-                        Constants.PROTORECORD_VERSION_SIZE,
-                        Constants.PROTORECORD_INDEX_SUMMARY_SIZE);
+                index_file_.seek(Constants.SUMMARY_BLOCK_OFFSET);
+                int summary_size = index_file_.read();
+                byte[] summary_buffer = new byte[summary_size];
+                index_file_.read(summary_buffer,0,summary_size);
 
-                IndexSummary summary = IndexSummary.parseFrom(buffer_);
+                IndexSummary summary = IndexSummary.parseFrom(summary_buffer);
                 index_summary_total_items_ = summary.getTotalItems();
-                index_summary_index_item_size_ = summary.getIndexItemSize();
                 index_summary_start_time_utc_ = summary.getStartTimeUtc();
                 index_summary_flags_ = summary.getFlags();
             }
@@ -423,7 +411,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
      * @return
      * True if index_item was parsed successfully, false otherwise
      */
-    private IndexItem get_index_item(long item_idx)
+    private IndexItem get_index_item(int item_idx)
     {
         fail_reason_ = "";
         boolean okay = initialized_ && item_idx < size();
@@ -432,13 +420,15 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
         if (okay)
         {
             // compute position to IndexItem in file
-            int pos = Constants.PROTORECORD_VERSION_SIZE + Constants.PROTORECORD_INDEX_SUMMARY_SIZE;
-            pos += item_idx * index_summary_.getIndexItemSize();
+            int pos = Constants.ITEM_BLOCK_OFFSET + Constants.ITEM_BLOCK_STRIDE * item_idx;
 
             // seek to position and read
             try {
-                index_file_.read(buffer_,pos,index_summary_.getIndexItemSize());
-                item_out = IndexItem.parseFrom(buffer_);
+                index_file_.seek(pos);
+                int index_item_size = index_file_.read();
+                byte[] item_buffer = new byte[index_item_size];
+                index_file_.read(item_buffer,0,index_item_size);
+                item_out = IndexItem.parseFrom(item_buffer);
             } catch (IOException ex) {
                 fail_reason_ = "reached end of index file";
                 okay = false;

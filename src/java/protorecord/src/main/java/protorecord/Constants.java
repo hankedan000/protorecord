@@ -14,13 +14,27 @@ public class Constants {
     public static int PROTORECORD_VERSION_SIZE = 24;
 
     // size in bytes of the IndexSummary message
-    public static int PROTORECORD_INDEX_SUMMARY_SIZE = 28;
+    public static int PROTORECORD_INDEX_SUMMARY_SIZE = 20;
 
     // size in bytes of the IndexItem message
     public static int PROTORECORD_INDEX_ITEM_SIZE_TIMESTAMP = 20;
 
     // size in bytes of the IndexItem message with no timestamp
     public static int PROTORECORD_INDEX_ITEM_SIZE_NO_TIMESTAMP = 12;
+
+    // location where to begin parsing the version number in index file
+    public static int VERSION_BLOCK_OFFSET = 0;
+
+    public static int VERSION_BLOCK_SIZE = (PROTORECORD_VERSION_SIZE + 1);
+
+    // location where to begin parsing the index summary
+    public static int SUMMARY_BLOCK_OFFSET = (VERSION_BLOCK_OFFSET + VERSION_BLOCK_SIZE);
+
+    public static int SUMMARY_BLOCK_SIZE = (PROTORECORD_INDEX_SUMMARY_SIZE + 1);
+
+    public static int ITEM_BLOCK_OFFSET = (SUMMARY_BLOCK_OFFSET + SUMMARY_BLOCK_SIZE);
+
+    public static int ITEM_BLOCK_STRIDE = (PROTORECORD_INDEX_ITEM_SIZE_TIMESTAMP + 1);
     
     static class Flags {
         // set if the other bits in the words are valid
