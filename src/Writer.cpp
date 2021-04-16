@@ -1,7 +1,9 @@
+#include "protorecord/Constants.h"
 #include "protorecord/Writer.h"
 #include "Protorecord.pb.h"
 // TODO support non-unix systems
 #include <sys/stat.h>
+#include <stdint.h>
 
 namespace protorecord
 {
@@ -25,7 +27,6 @@ namespace protorecord
 		bool enable_timestamping)
 	 : initialized_(false)
 	 , timestamping_enabled_()
-	 , item_size_(0)
 	 , record_path_()
 	 , index_file_()
 	 , data_file_()
@@ -116,7 +117,7 @@ namespace protorecord
 
 		if (initialized_)
 		{
-			store_summary(PROTORECORD_VERSION_SIZE,true);
+			store_summary(SUMMARY_BLOCK_OFFSET,true);
 			index_file_.close();
 			data_file_.close();
 
@@ -200,10 +201,8 @@ namespace protorecord
 			}
 		}
 
-		item_size_ = PROTORECORD_INDEX_ITEM_SIZE_NO_TIMESTAMP;
 		if (timestamping_enabled_)
 		{
-			item_size_ = PROTORECORD_INDEX_ITEM_SIZE_TIMESTAMP;
 			flags_ |= protorecord::Flags::HAS_TIMESTAMPS;
 		}
 
@@ -217,12 +216,13 @@ namespace protorecord
 			version.set_major(protorecord::major_version());
 			version.set_minor(protorecord::minor_version());
 			version.set_patch(protorecord::patch_version());
-			memset((void*)buffer_.data(),0,PROTORECORD_VERSION_SIZE);
+			uint8_t version_size = version.ByteSizeLong();
 			version.SerializeToArray((void*)buffer_.data(),buffer_.size());
-			index_file_.write(buffer_.data(),PROTORECORD_VERSION_SIZE);
+			index_file_.write((const char *)&version_size,1);
+			index_file_.write(buffer_.data(),version_size);
 
 			// store current summary information in index file
-			store_summary(PROTORECORD_VERSION_SIZE,false);// don't restore to previous position
+			store_summary(SUMMARY_BLOCK_OFFSET,false);// don't restore to previous position
 		}
 
 		return okay;
@@ -244,14 +244,14 @@ namespace protorecord
 			// create index summary based on member variables
 			static protorecord::IndexSummary summary;
 			summary.set_total_items(total_item_count_);
-			summary.set_index_item_size(item_size_);
 			summary.set_start_time_utc(start_time_system_.count());
 			summary.set_flags(flags_);
 
 			// save latest index summary
-			memset((void*)buffer_.data(),0,PROTORECORD_INDEX_SUMMARY_SIZE);
 			okay = okay && summary.SerializeToArray((void*)buffer_.data(),buffer_.size());
-			index_file_.write(buffer_.data(),PROTORECORD_INDEX_SUMMARY_SIZE);
+			uint8_t summary_size = summary.ByteSizeLong();
+			index_file_.write((const char *)&summary_size,1);
+			index_file_.write(buffer_.data(),summary_size);
 
 			if (restore_pos)
 			{
@@ -285,10 +285,13 @@ namespace protorecord
 			data_file_.write((const char *)item_data,item_data_size);
 
 			// update index file
-			memset((void*)buffer_.data(),0,item_size_);
 			if (index_item.SerializeToArray((void*)buffer_.data(),buffer_.size()))
 			{
-				index_file_.write(buffer_.data(),item_size_);
+				uint32_t pos = ITEM_BLOCK_OFFSET + total_item_count_ * ITEM_BLOCK_STRIDE;
+				uint8_t index_item_serialize_size = index_item.ByteSizeLong();
+				index_file_.seekp(pos);
+				index_file_.write((const char *)&index_item_serialize_size,1);
+				index_file_.write(buffer_.data(),index_item_serialize_size);
 				// increment item count
 				total_item_count_++;
 			}

@@ -205,9 +205,6 @@ namespace protorecord
 		// this must be specified at constructor time
 		bool timestamping_enabled_;
 
-		// the size of an index item in bytes
-		uint32_t item_size_;
-
 		// the records filepath
 		std::string record_path_;
 
@@ -258,7 +255,7 @@ namespace protorecord
 			{
 				// for internal class needs, we need the buffer at least as an IndexItem
 				// so that we can serialize items for the index file
-				buffer_.resize(std::max(item_size_,obj_size*2));
+				buffer_.resize(obj_size*2);
 			}
 
 			if (pb.SerializeToArray((void*)buffer_.data(),buffer_.size()))

@@ -1,16 +1,32 @@
 #pragma once
 
+#include <stdint.h>
+
 // size in bytes of the Version message
 #define PROTORECORD_VERSION_SIZE 24
 
 // size in bytes of the IndexSummary message
-#define PROTORECORD_INDEX_SUMMARY_SIZE 28
+#define PROTORECORD_INDEX_SUMMARY_SIZE 20
 
 // size in bytes of the IndexItem message
 #define PROTORECORD_INDEX_ITEM_SIZE_TIMESTAMP 20
 
 // size in bytes of the IndexItem message with no timestamp
 #define PROTORECORD_INDEX_ITEM_SIZE_NO_TIMESTAMP 12
+
+// location where to begin parsing the version number in index file
+#define VERSION_BLOCK_OFFSET 0
+
+#define VERSION_BLOCK_SIZE (PROTORECORD_VERSION_SIZE + 1)
+
+// location where to begin parsing the index summary
+#define SUMMARY_BLOCK_OFFSET (VERSION_BLOCK_OFFSET + VERSION_BLOCK_SIZE)
+
+#define SUMMARY_BLOCK_SIZE (PROTORECORD_INDEX_SUMMARY_SIZE + 1)
+
+#define ITEM_BLOCK_OFFSET (SUMMARY_BLOCK_OFFSET + SUMMARY_BLOCK_SIZE)
+
+#define ITEM_BLOCK_STRIDE (PROTORECORD_INDEX_ITEM_SIZE_TIMESTAMP + 1)
 
 namespace protorecord
 {

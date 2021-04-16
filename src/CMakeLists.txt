@@ -2,7 +2,7 @@ add_subdirectory(proto)
 
 add_library(protorecord SHARED
 	Writer.cpp
-	Reader.cpp
+	#Reader.cpp
 )
 target_link_libraries(protorecord
 	PUBLIC
