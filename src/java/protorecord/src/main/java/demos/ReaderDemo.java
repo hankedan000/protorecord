@@ -17,7 +17,7 @@ public class ReaderDemo {
 
     public static void main(String args[]) {
         File recordPath = new File("/home/daniel/Downloads/recording");
-        Reader reader = new Reader<DemoMessages.BasicMessage>(recordPath,DemoMessages.BasicMessage.parser());
+        Reader reader = new Reader<>(recordPath,DemoMessages.BasicMessage.parser());
         
         while (reader.has_next()) {
             DemoMessages.BasicMessage msg = (DemoMessages.BasicMessage)reader.take_next();
