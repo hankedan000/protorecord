@@ -6,13 +6,10 @@
 package protorecord;
 
 import com.google.protobuf.Parser;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import protorecord.Protorecord.IndexItem;
 import protorecord.Protorecord.IndexSummary;
 import protorecord.Protorecord.Version;
@@ -64,7 +61,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
      * @param[in] filepath
      * The absolute or relative filepath to the record.
      */
-    public Reader(String filepath, Parser<MSG_T> parser)
+    public Reader(File filepath, Parser<MSG_T> parser)
     {
         index_file_ = null;
         data_file_ = null;
@@ -286,13 +283,13 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
      * @return
      * True if successfully initialized, false otherwise
      */
-    protected boolean init_record(String filepath)
+    protected boolean init_record(File filepath)
     {
         fail_reason_ = "";
         boolean okay = true;
 
         // open the index file
-        String INDEX_FILEPATH = filepath + "/index";
+        File INDEX_FILEPATH = new File(filepath,"index");
         if (okay)
         {
             try {
@@ -304,7 +301,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
         }
 
         // open the data file
-        String DATA_FILEPATH = filepath + "/data";
+        File DATA_FILEPATH = new File(filepath,"data");
         if (okay)
         {
             try {
