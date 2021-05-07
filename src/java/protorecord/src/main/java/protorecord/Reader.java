@@ -120,7 +120,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
      * @return
      * The google::protobuf message, or null on failure
      */
-    public MSG_T get_item(int idx)
+    public MSG_T get_item(long idx)
     {
         fail_reason_ = "";
         MSG_T out_msg = null;
@@ -411,7 +411,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
      * @return
      * True if index_item was parsed successfully, false otherwise
      */
-    private IndexItem get_index_item(int item_idx)
+    private IndexItem get_index_item(long item_idx)
     {
         fail_reason_ = "";
         boolean okay = initialized_ && item_idx < size();
@@ -420,7 +420,9 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
         if (okay)
         {
             // compute position to IndexItem in file
-            int pos = Constants.ITEM_BLOCK_OFFSET + Constants.ITEM_BLOCK_STRIDE * item_idx;
+            // FIXME lossy conversion here, but java files only support int
+            // position peeks
+            int pos = (int)(Constants.ITEM_BLOCK_OFFSET + Constants.ITEM_BLOCK_STRIDE * item_idx);
 
             // seek to position and read
             try {
