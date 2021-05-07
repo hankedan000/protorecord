@@ -91,54 +91,20 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
      * Reads the next protobuf message from the record, but does not
      * increment to the next item.
      *
-     * @param[out] pb
-     * The google::protobuf message to read into
-     *
      * @return
-     * True if message was successfully read, false otherwise
+     * The google::protobuf message that was read, or null on failure
      */
     public MSG_T get_next()
     {
-        boolean okay = initialized_;
-        MSG_T out_msg = null;
-        fail_reason_ = "";
-
-        okay = okay && has_next();
-        IndexItem index_item = get_index_item(next_item_num_);
-        if (index_item == null) {
-            okay = false;
-        }
-
-        if (okay)
-        {
-            try {
-                byte[] msg_buffer = new byte[index_item.getSize()];
-                data_file_.seek(index_item.getOffset());
-                data_file_.read(msg_buffer,0,index_item.getSize());
-                out_msg = parser_.parseFrom(msg_buffer);
-            } catch (IOException ex) {
-                fail_reason_ = "reached end of data file";
-                okay = false;
-            }
-        }
-
-        if ( ! okay)
-        {
-            failbit_ = true;
-        }
-
-        return out_msg;
+        return get_item(next_item_num_);
     }
  
     /**
      * Reads the next protobuf message from the record, and increments
      * to the next item.
      *
-     * @param[out] pb
-     * The google::protobuf message to read into
-     *
      * @return
-     * True if message was successfully read, false otherwise
+     * The google::protobuf message that was taken, or null on failure
      */
     public MSG_T take_next()
     {
@@ -146,6 +112,43 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
         if (out_msg != null) {
             next_item_num_++;
         }
+        return out_msg;
+    }
+    /**
+     * Reads the protobuf message at the specified index
+     *
+     * @return
+     * The google::protobuf message, or null on failure
+     */
+    public MSG_T get_item(int idx)
+    {
+        fail_reason_ = "";
+        MSG_T out_msg = null;
+        if (idx < size()) {
+            IndexItem index_item = get_index_item(idx);
+
+            if (index_item != null) {
+                try {
+                    byte[] msg_buffer = new byte[index_item.getSize()];
+                    data_file_.seek(index_item.getOffset());
+                    data_file_.read(msg_buffer,0,index_item.getSize());
+                    out_msg = parser_.parseFrom(msg_buffer);
+                } catch (IOException ex) {
+                    fail_reason_ = "reached end of data file";
+                    out_msg = null;
+                }
+            } else {
+                fail_reason_ = "index_item is null";
+                out_msg = null;
+            }
+        } else {
+            fail_reason_ = String.format("idx %d is less than size() %d",idx,size());
+            out_msg = null;
+        }
+        
+        // Assert fail bit
+        failbit_ = failbit_ || out_msg == null;
+        
         return out_msg;
     }
  
