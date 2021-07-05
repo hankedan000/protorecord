@@ -386,6 +386,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
             data_file_.close();
         } catch (IOException ex) {
         }
+        initialized_ = false;
     }
  
     /**

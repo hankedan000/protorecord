@@ -7,6 +7,7 @@ package demos;
 
 import java.io.File;
 import protorecord.Reader;
+import protorecord.TestRecordings;
 import protorecord.demo.DemoMessages;
 
 /**
@@ -16,7 +17,7 @@ import protorecord.demo.DemoMessages;
 public class ReaderDemo {
 
     public static void main(String args[]) {
-        File recordPath = new File("/home/daniel/Downloads/recording");
+        File recordPath = TestRecordings.basicHelloworld();
         Reader reader = new Reader<>(recordPath,DemoMessages.BasicMessage.parser());
         
         while (reader.has_next()) {

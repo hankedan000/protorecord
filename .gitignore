@@ -20,3 +20,4 @@ src/java/protorecord/src/main/java/protorecord/demo/DemoMessages.java
 
 # ignore java buil directory
 /src/java/protorecord/target/
+/src/java/protorecord/nbproject/
