@@ -17,6 +17,7 @@ int main()
 	BasicMessage bmsg;
 	bmsg.set_mystring("helloworld");
 
+	bar.reset();
 	for (unsigned int i=0; i<N; i++)
 	{
 		bar.progress(i, N);
@@ -46,6 +47,7 @@ int main()
 	lmsg.add_mybools(rand()%2);
 	lmsg.add_mybools(rand()%2);
 
+	bar.reset();
 	for (unsigned int i=0; i<N; i++)
 	{
 		bar.progress(i, N);
