@@ -128,7 +128,7 @@ namespace protorecord
 				if (readme.good())
 				{
 					const std::string REPO_URL("https://github.com/hankedan000/protorecord");
-					readme << "**THIS FILE IS AUTO GENERATED AND IT'S FORMAT SHOULD NOT BE ASSUMED**" << std::endl;
+					readme << "**THIS FILE IS AUTO GENERATED AND ITS FORMAT SHOULD NOT BE ASSUMED**" << std::endl;
 					readme << "This directory was created with the [protorecord](" << REPO_URL << ") library." << std::endl;
 					readme << "protorecord version: " << version_to_string(this_version()) << std::endl;
 					time_t rawtime = start_time_system_.count() / 1000000.0;
