@@ -412,6 +412,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
      * @return
      * True if index_item was parsed successfully, false otherwise
      */
+    private Parser<IndexItem> item_parser_ = IndexItem.getDefaultInstance().getParserForType();
     private IndexItem get_index_item(long item_idx)
     {
         fail_reason_ = "";
@@ -431,7 +432,7 @@ public class Reader<MSG_T extends com.google.protobuf.Message> {
                 int index_item_size = index_file_.read();
                 byte[] item_buffer = new byte[index_item_size];
                 index_file_.read(item_buffer,0,index_item_size);
-                item_out = IndexItem.parseFrom(item_buffer);
+                item_out = item_parser_.parseFrom(item_buffer);
             } catch (IOException ex) {
                 fail_reason_ = "reached end of index file";
                 okay = false;
